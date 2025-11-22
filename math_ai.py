@@ -1,6 +1,6 @@
 import streamlit as st
 import random
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 # --- CẤU HÌNH TRANG WEB ---
 st.set_page_config(
@@ -72,11 +72,12 @@ def sinh_de_dien_tich():
     goi_y = f"Công thức: (Đáy lớn + Đáy bé) nhân Chiều cao rồi chia 2.\n({day_lon} + {day_be}) * {chieu_cao} / 2"
     return de_bai, dap_an, goi_y
 
-# Hàm dịch thuật
+# Hàm dịch thuật (DÙNG THƯ VIỆN MỚI DEEP-TRANSLATOR)
 def dich_sang_mong(text):
     try:
-        trans = Translator().translate(text, src='vi', dest='hmn')
-        return trans.text
+        # Sử dụng GoogleTranslator mới ổn định hơn
+        translated = GoogleTranslator(source='vi', target='hmn').translate(text)
+        return translated
     except:
         return "Đang kết nối AI ngôn ngữ..."
 
