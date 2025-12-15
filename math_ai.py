@@ -1,5 +1,19 @@
 import streamlit as st
 import random
+from gtts import gTTS
+import os
+import uuid
+
+# ================== HÀM ĐỌC GIỌNG NÓI AI ==================
+def ai_noi(text):
+    filename = f"voice_{uuid.uuid4()}.mp3"
+    tts = gTTS(text=text, lang="vi")
+    tts.save(filename)
+    audio_file = open(filename, "rb")
+    audio_bytes = audio_file.read()
+    st.audio(audio_bytes, format="audio/mp3")
+    audio_file.close()
+    os.remove(filename)
 
 # ================== CẤU HÌNH ==================
 st.set_page_config(
@@ -47,7 +61,7 @@ chu_so = {
     6: "Sáu", 7: "Bảy", 8: "Tám", 9: "Chín", 10: "Mười"
 }
 
-# ================== SESSION STATE ==================
+# ================== SESSION ==================
 if "buoc" not in st.session_state:
     st.session_state.buoc = 1
     st.session_state.so = 1
@@ -75,6 +89,8 @@ if st.session_state.buoc == 1:
     </div>
     """, unsafe_allow_html=True)
 
+    ai_noi("Xin chào các bạn nhỏ! Hôm nay chúng mình cùng đếm số nhé!")
+
     if st.button("👉 BẮT ĐẦU"):
         st.session_state.buoc = 2
 
@@ -93,11 +109,13 @@ elif st.session_state.buoc == 2:
     </div>
     """, unsafe_allow_html=True)
 
+    ai_noi(chu_so[st.session_state.so])
+
     if st.button("➡️ LUYỆN TẬP"):
         st.session_state.buoc = 3
 
 # ==================================================
-# 🔹 BƯỚC 3: TƯƠNG TÁC – LUYỆN TẬP
+# 🔹 BƯỚC 3: TƯƠNG TÁC
 # ==================================================
 elif st.session_state.buoc == 3:
     st.markdown(f"""
@@ -107,8 +125,10 @@ elif st.session_state.buoc == 3:
     </div>
     """, unsafe_allow_html=True)
 
+    ai_noi(f"Có bao nhiêu {st.session_state.ten}?")
+
     tra_loi = st.number_input(
-        "👉 Bé chọn số đúng:",
+        "👉 Bé chọn số:",
         min_value=1,
         max_value=10,
         step=1
@@ -118,33 +138,26 @@ elif st.session_state.buoc == 3:
         if tra_loi == st.session_state.so:
             st.balloons()
             st.success("🎉 Giỏi quá! Con làm đúng rồi!")
+            ai_noi("Giỏi quá! Con làm đúng rồi!")
             if st.button("➡️ CỦNG CỐ"):
                 st.session_state.buoc = 4
         else:
             st.warning("😊 Con thử lại nhé!")
+            ai_noi("Con thử lại nhé!")
 
 # ==================================================
 # 🔹 BƯỚC 4: CỦNG CỐ
 # ==================================================
 elif st.session_state.buoc == 4:
-    cau_hoi = random.choice([1, 2])
+    dap_an = st.session_state.so + 1
+    st.markdown("""
+    <div class="card">
+    🐰 Số nào đứng sau số này?
+    </div>
+    """, unsafe_allow_html=True)
 
-    if cau_hoi == 1:
-        dap_an = st.session_state.so + 1
-        st.markdown("""
-        <div class="card">
-        🐰 Số nào đứng sau số này?
-        </div>
-        """, unsafe_allow_html=True)
-        st.write(f"Số: **{st.session_state.so}**")
-    else:
-        dap_an = st.session_state.so
-        st.markdown("""
-        <div class="card">
-        🐰 Có mấy con thỏ?
-        </div>
-        """, unsafe_allow_html=True)
-        st.write(st.session_state.hinh * st.session_state.so)
+    st.write(f"Số: **{st.session_state.so}**")
+    ai_noi(f"Số nào đứng sau số {st.session_state.so}?")
 
     tra_loi = st.number_input(
         "👉 Bé trả lời:",
@@ -156,10 +169,12 @@ elif st.session_state.buoc == 4:
     if st.button("✅ TRẢ LỜI"):
         if tra_loi == dap_an:
             st.success("⭐ Rất giỏi!")
+            ai_noi("Rất giỏi!")
             if st.button("➡️ KẾT THÚC"):
                 st.session_state.buoc = 5
         else:
             st.warning("😊 Con suy nghĩ lại nhé!")
+            ai_noi("Con suy nghĩ lại nhé!")
 
 # ==================================================
 # 🔹 BƯỚC 5: KẾT THÚC
@@ -170,9 +185,11 @@ elif st.session_state.buoc == 5:
     <div class="card">
     🐰 Hôm nay con học rất giỏi! <br>
     Thỏ Con khen con nhé! <br>
-    Hẹn gặp lại lần sau! 💖
+    Hẹn gặp lại lần sau!
     </div>
     """, unsafe_allow_html=True)
+
+    ai_noi("Hôm nay con học rất giỏi! Hẹn gặp lại lần sau!")
 
     if st.button("🔄 HỌC LẠI"):
         st.session_state.buoc = 1
