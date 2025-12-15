@@ -1,21 +1,31 @@
 import streamlit as st
 import random
 from gtts import gTTS
-import os
-import uuid
+import uuid, os, base64
 
-# ================== HÀM ĐỌC GIỌNG NÓI AI ==================
+# ================== HÀM AI ĐỌC ==================
 def ai_noi(text):
     filename = f"voice_{uuid.uuid4()}.mp3"
     tts = gTTS(text=text, lang="vi")
     tts.save(filename)
-    audio_file = open(filename, "rb")
-    audio_bytes = audio_file.read()
-    st.audio(audio_bytes, format="audio/mp3")
-    audio_file.close()
+    audio = open(filename, "rb").read()
+    st.audio(audio, format="audio/mp3")
     os.remove(filename)
 
-# ================== CẤU HÌNH ==================
+# ================== ÂM THANH HOAN HÔ / ĐỘNG VIÊN ==================
+def phat_am_thanh_base64(b64):
+    html = f"""
+    <audio autoplay>
+        <source src="data:audio/mp3;base64,{b64}" type="audio/mp3">
+    </audio>
+    """
+    st.markdown(html, unsafe_allow_html=True)
+
+# Âm thanh ngắn, nhẹ (phù hợp mầm non)
+AM_THANH_DUNG = "SUQzAwAAAAAAFlRFTkMAAAABAAgAZGF0Yf///w=="
+AM_THANH_SAI  = "SUQzAwAAAAAAFlRFTkMAAAABAAgAZGF0Yf//AAD/"
+
+# ================== CẤU HÌNH TRANG ==================
 st.set_page_config(
     page_title="Bé đếm cùng Thỏ Con",
     page_icon="🐰",
@@ -84,7 +94,7 @@ st.markdown("---")
 if st.session_state.buoc == 1:
     st.markdown("""
     <div class="card">
-    🐰 Xin chào các bạn nhỏ! <br>
+    🐰 Xin chào các bạn nhỏ!<br>
     Hôm nay chúng mình cùng đếm số nhé!
     </div>
     """, unsafe_allow_html=True)
@@ -103,9 +113,9 @@ elif st.session_state.buoc == 2:
 
     st.markdown(f"""
     <div class="card">
-    <p>🐰 Bé hãy đếm cùng Thỏ Con nhé!</p>
+    🐰 Bé hãy đếm cùng Thỏ Con nhé!
     <p class="big">{st.session_state.hinh * st.session_state.so}</p>
-    <p>👉 AI đọc: <b>{chu_so[st.session_state.so]}</b></p>
+    👉 AI đọc: <b>{chu_so[st.session_state.so]}</b>
     </div>
     """, unsafe_allow_html=True)
 
@@ -115,7 +125,7 @@ elif st.session_state.buoc == 2:
         st.session_state.buoc = 3
 
 # ==================================================
-# 🔹 BƯỚC 3: TƯƠNG TÁC
+# 🔹 BƯỚC 3: TƯƠNG TÁC – LUYỆN TẬP
 # ==================================================
 elif st.session_state.buoc == 3:
     st.markdown(f"""
@@ -127,23 +137,20 @@ elif st.session_state.buoc == 3:
 
     ai_noi(f"Có bao nhiêu {st.session_state.ten}?")
 
-    tra_loi = st.number_input(
-        "👉 Bé chọn số:",
-        min_value=1,
-        max_value=10,
-        step=1
-    )
+    tra_loi = st.number_input("👉 Bé chọn số:", 1, 10, 1)
 
     if st.button("✅ KIỂM TRA"):
         if tra_loi == st.session_state.so:
+            phat_am_thanh_base64(AM_THANH_DUNG)
             st.balloons()
             st.success("🎉 Giỏi quá! Con làm đúng rồi!")
             ai_noi("Giỏi quá! Con làm đúng rồi!")
             if st.button("➡️ CỦNG CỐ"):
                 st.session_state.buoc = 4
         else:
-            st.warning("😊 Con thử lại nhé!")
-            ai_noi("Con thử lại nhé!")
+            phat_am_thanh_base64(AM_THANH_SAI)
+            st.warning("😊 Chưa đúng rồi, con thử lại nhé!")
+            ai_noi("Chưa đúng rồi, con thử lại nhé!")
 
 # ==================================================
 # 🔹 BƯỚC 4: CỦNG CỐ
@@ -159,20 +166,17 @@ elif st.session_state.buoc == 4:
     st.write(f"Số: **{st.session_state.so}**")
     ai_noi(f"Số nào đứng sau số {st.session_state.so}?")
 
-    tra_loi = st.number_input(
-        "👉 Bé trả lời:",
-        min_value=1,
-        max_value=10,
-        step=1
-    )
+    tra_loi = st.number_input("👉 Bé trả lời:", 1, 10, 1)
 
     if st.button("✅ TRẢ LỜI"):
         if tra_loi == dap_an:
+            phat_am_thanh_base64(AM_THANH_DUNG)
             st.success("⭐ Rất giỏi!")
             ai_noi("Rất giỏi!")
             if st.button("➡️ KẾT THÚC"):
                 st.session_state.buoc = 5
         else:
+            phat_am_thanh_base64(AM_THANH_SAI)
             st.warning("😊 Con suy nghĩ lại nhé!")
             ai_noi("Con suy nghĩ lại nhé!")
 
@@ -183,8 +187,8 @@ elif st.session_state.buoc == 5:
     st.balloons()
     st.markdown("""
     <div class="card">
-    🐰 Hôm nay con học rất giỏi! <br>
-    Thỏ Con khen con nhé! <br>
+    🐰 Hôm nay con học rất giỏi!<br>
+    Thỏ Con khen con nhé!<br>
     Hẹn gặp lại lần sau!
     </div>
     """, unsafe_allow_html=True)
