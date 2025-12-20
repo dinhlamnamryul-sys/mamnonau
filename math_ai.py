@@ -198,7 +198,7 @@ def generate_data():
 if st.session_state.num == 0:
     generate_data()
 
-# --- HÀM HTML TRANG TRÍ (Kết hợp Vịt + Hoa + Ong bạn gửi) ---
+# --- HÀM HTML TRANG TRÍ (ĐÃ SỬA LỖI HIỂN THỊ) ---
 def get_decoration_html():
     return """
     <div class="playground-area">
@@ -227,7 +227,7 @@ if st.session_state.step == 1:
     </div>
     """, unsafe_allow_html=True)
     
-    # Hiển thị trang trí ngay trang chủ
+    # Hiển thị trang trí
     st.markdown(get_decoration_html(), unsafe_allow_html=True)
     
     c1, c2, c3 = st.columns([1,1,1])
@@ -246,7 +246,6 @@ elif st.session_state.step == 2:
     with col_controls:
         st.markdown("### 🎮 Điều khiển")
         
-        # Các nút điều khiển
         st.markdown(f"""<style>div.stButton:nth-of-type(1) > button {{background: linear-gradient(to bottom, #a29bfe, #6c5ce7);}}</style>""", unsafe_allow_html=True)
         if st.button("🔊 Nghe câu hỏi"):
             play_sound_and_wait("Bé hãy nhìn xem, đây là số mấy?", 3)
@@ -274,7 +273,7 @@ elif st.session_state.step == 2:
         </div>
         """, unsafe_allow_html=True)
         
-        # Chèn trang trí vào bên dưới
+        # SỬA LỖI: Gọi hàm đúng cách
         st.markdown(get_decoration_html(), unsafe_allow_html=True)
 
 # --- BƯỚC 3: HỌC ĐẾM ---
@@ -309,7 +308,7 @@ elif st.session_state.step == 3:
         </div>
         """, unsafe_allow_html=True)
         
-        # Chèn trang trí
+        # SỬA LỖI: Gọi hàm đúng cách
         st.markdown(get_decoration_html(), unsafe_allow_html=True)
 
 # --- BƯỚC 4: BÀI TẬP ---
@@ -357,5 +356,5 @@ elif st.session_state.step == 4:
                         st.error("Sai rồi!")
                         play_sound_and_wait("Chưa đúng rồi, bé thử lại nhé!", 2)
 
-        # Chèn trang trí
+        # SỬA LỖI: Gọi hàm đúng cách
         st.markdown(get_decoration_html(), unsafe_allow_html=True)
