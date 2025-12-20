@@ -2,3 +2,5 @@ streamlit
 streamlit-lottie
 requests
 gTTS
+SpeechRecognition
+pyaudio
