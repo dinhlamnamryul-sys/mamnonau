@@ -15,6 +15,7 @@ st.set_page_config(
 # Khởi tạo Session
 if "step" not in st.session_state: st.session_state.step = 1
 if "num" not in st.session_state: st.session_state.num = 0
+if "unit" not in st.session_state: st.session_state.unit = "" # Thêm biến lưu loại từ (con/quả/chiếc)
 
 # ================== 2. CSS & ANIMATION TOÀN MÀN HÌNH ==================
 st.markdown("""
@@ -25,7 +26,7 @@ st.markdown("""
         font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
     }
 
-    /* Card hiển thị - Nổi lên trên cùng */
+    /* Card hiển thị */
     .game-card {
         background-color: rgba(255, 255, 255, 0.95);
         border-radius: 40px;
@@ -35,8 +36,12 @@ st.markdown("""
         border: 6px solid #fff;
         animation: floatCard 5s ease-in-out infinite;
         position: relative;
-        z-index: 100; /* Quan trọng: Nổi trên các con vật */
+        z-index: 100;
         min-height: 350px;
+        display: flex;       /* Căn giữa nội dung dọc/ngang */
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 
     @keyframes floatCard {
@@ -46,8 +51,8 @@ st.markdown("""
 
     /* Số khổng lồ */
     .super-number {
-        font-size: 140px;
-        line-height: 1.1;
+        font-size: 160px;
+        line-height: 1;
         font-weight: 900;
         color: #ff6b6b;
         text-shadow: 4px 4px 0px #fff;
@@ -57,8 +62,8 @@ st.markdown("""
     /* BUTTON STYLE */
     div.stButton > button {
         width: 100%;
-        height: 65px;
-        font-size: 18px !important;
+        height: 70px;
+        font-size: 20px !important;
         font-weight: 800 !important;
         color: white !important;
         border: 3px solid white !important;
@@ -68,7 +73,7 @@ st.markdown("""
         box-shadow: 0 5px 0 rgba(0,0,0,0.15);
         transition: all 0.2s;
         position: relative;
-        z-index: 101; /* Nổi lên trên cùng để bấm được */
+        z-index: 101;
     }
 
     div.stButton > button:active {
@@ -79,38 +84,31 @@ st.markdown("""
     .char-item {
         font-size: 80px;
         display: inline-block;
-        margin: 5px;
+        margin: 10px;
         filter: drop-shadow(0 5px 2px rgba(0,0,0,0.1)); 
     }
     
-    .instruction { font-size: 22px; color: #57606f; font-weight: bold; }
+    .instruction { font-size: 24px; color: #57606f; font-weight: bold; margin-bottom: 20px; }
     
     #MainMenu, footer, header {visibility: hidden;}
     
     .block-container {
         padding-top: 2rem;
-        padding-bottom: 2rem;
         max-width: 1000px;
-        position: relative;
-        z-index: 50;
     }
 
-    /* ============================================================
-       ANIMATION (Full Screen)
-       ============================================================ */
-    
+    /* ANIMATION (Full Screen) */
     .full-screen-anim {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        pointer-events: none; /* Cho phép bấm xuyên qua hình */
+        pointer-events: none;
         z-index: 1;
         overflow: hidden;
     }
 
-    /* VỊT BƠI */
     @keyframes swim-screen {
         0% { left: -150px; transform: scaleX(1); }
         45% { left: 100vw; transform: scaleX(1); }
@@ -125,7 +123,6 @@ st.markdown("""
         animation: swim-screen 25s linear infinite;
     }
 
-    /* ONG BAY */
     @keyframes fly-screen {
         0%   { top: 10vh; left: -10vw; }
         25%  { top: 20vh; left: 30vw; transform: rotate(10deg); }
@@ -139,7 +136,6 @@ st.markdown("""
         animation: fly-screen 20s linear infinite;
     }
 
-    /* BONG BÓNG */
     @keyframes rise-screen {
         0% { bottom: -50px; opacity: 0; transform: scale(0.5); }
         50% { opacity: 0.6; }
@@ -150,7 +146,6 @@ st.markdown("""
         background: rgba(255,255,255,0.6);
         border-radius: 50%;
     }
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -168,11 +163,25 @@ def play_sound_and_wait(text, wait_seconds):
 
 def generate_data():
     st.session_state.num = random.randint(1, 10)
-    st.session_state.icon, st.session_state.name = random.choice([
-        ("🐰", "Thỏ"), ("🍎", "Táo"), ("⭐", "Sao"), 
-        ("🎈", "Bóng"), ("🍄", "Nấm"), ("🐠", "Cá"),
-        ("🚗", "Xe"), ("🦋", "Bươm")
-    ])
+    # Cấu trúc dữ liệu mới: (Icon, Tên, Loại từ)
+    data_source = [
+        ("🐰", "Thỏ", "con"), 
+        ("🍎", "Táo", "quả"), 
+        ("⭐", "Sao", "ngôi"), 
+        ("🎈", "Bóng", "quả"), 
+        ("🍄", "Nấm", "cây"), 
+        ("🐠", "Cá", "con"),
+        ("🚗", "Xe", "chiếc"), 
+        ("🦋", "Bướm", "con")
+    ]
+    
+    # Chọn ngẫu nhiên
+    selected = random.choice(data_source)
+    st.session_state.icon = selected[0]
+    st.session_state.name = selected[1]
+    st.session_state.unit = selected[2] # Lưu loại từ (con, quả, chiếc...)
+
+    # Tạo đáp án trắc nghiệm
     choices = [st.session_state.num]
     while len(choices) < 3:
         fake = random.randint(1, 10)
@@ -183,14 +192,13 @@ def generate_data():
 if st.session_state.num == 0:
     generate_data()
 
-# --- HÀM HTML TRANG TRÍ (ĐÃ SỬA LỖI HIỂN THỊ TEXT) ---
-# Tôi đã gộp thành 1 dòng để tránh lỗi thụt đầu dòng của Python
+# Hàm HTML trang trí (Viết liền 1 dòng để tránh lỗi hiển thị text)
 def get_decoration_html():
     return """<div class="full-screen-anim"><div class="duck-anim">🦆</div><div class="bee-anim">🐝</div><div class="bee-anim" style="animation-delay: 10s; top: 40vh; font-size: 35px;">🐝</div><div style="position: absolute; bottom: 10px; left: 5vw; font-size: 50px;">🌷</div><div style="position: absolute; bottom: 15px; left: 12vw; font-size: 40px;">🌻</div><div style="position: absolute; bottom: 10px; right: 5vw; font-size: 50px;">🍄</div><div class="bubble" style="left: 10vw; width: 30px; height: 30px; animation: rise-screen 10s infinite;"></div><div class="bubble" style="left: 30vw; width: 50px; height: 50px; animation: rise-screen 15s infinite 2s;"></div><div class="bubble" style="left: 70vw; width: 20px; height: 20px; animation: rise-screen 12s infinite 5s;"></div><div class="bubble" style="left: 90vw; width: 40px; height: 40px; animation: rise-screen 18s infinite 1s;"></div></div>"""
 
 # ================== 4. GIAO DIỆN CHÍNH ==================
 
-# Gọi hàm hiển thị hoạt hình ngay đầu chương trình để nó áp dụng cho mọi trang
+# Kích hoạt hình nền động
 st.markdown(get_decoration_html(), unsafe_allow_html=True)
 
 # --- BƯỚC 1: TRANG CHỦ ---
@@ -245,7 +253,7 @@ elif st.session_state.step == 2:
         </div>
         """, unsafe_allow_html=True)
 
-# --- BƯỚC 3: HỌC ĐẾM ---
+# --- BƯỚC 3: HỌC ĐẾM (ĐÃ SỬA: BỎ SỐ, SỬA LỜI NÓI) ---
 elif st.session_state.step == 3:
     html_icons = "".join([f'<span class="char-item">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
     
@@ -256,11 +264,13 @@ elif st.session_state.step == 3:
         
         st.markdown(f"""<style>div.stButton:nth-of-type(1) > button {{background: linear-gradient(to bottom, #a29bfe, #6c5ce7);}}</style>""", unsafe_allow_html=True)
         if st.button("🔊 Nghe câu hỏi"):
-            play_sound_and_wait(f"Đố bé biết có bao nhiêu bạn {st.session_state.name} ở đây?", 5)
+            # SỬA LỜI: Dùng unit (con/quả) thay vì "bạn" chung chung
+            play_sound_and_wait(f"Đố bé biết có bao nhiêu {st.session_state.unit} {st.session_state.name} ở đây?", 5)
         
         st.markdown(f"""<style>div.stButton:nth-of-type(2) > button {{background: linear-gradient(to bottom, #55efc4, #00b894);}}</style>""", unsafe_allow_html=True)
         if st.button("🔢 Đếm cùng cô"):
-            play_sound_and_wait(f"Có tất cả {st.session_state.num} bạn {st.session_state.name}", 3)
+            # SỬA LỜI: Dùng unit (con/quả)
+            play_sound_and_wait(f"Có tất cả {st.session_state.num} {st.session_state.unit} {st.session_state.name}", 3)
 
         st.markdown(f"""<style>div.stButton:nth-of-type(3) > button {{background: linear-gradient(to bottom, #fab1a0, #e17055);}}</style>""", unsafe_allow_html=True)
         if st.button("🎮 Chơi trò chơi"):
@@ -269,12 +279,12 @@ elif st.session_state.step == 3:
             st.rerun()
 
     with col_display:
+        # SỬA GIAO DIỆN: Bỏ phần hiển thị số, chỉ hiện câu hỏi và hình ảnh
         st.markdown(f"""
         <div class="game-card">
             <p class="instruction">Có bao nhiêu <b>{st.session_state.name}</b>?</p>
-            <div style="margin: 10px 0;">{html_icons}</div>
-            <h1 style="font-size: 80px; color:#ff6b81; margin:0;">{st.session_state.num}</h1>
-        </div>
+            <div style="margin: 20px 0;">{html_icons}</div>
+            </div>
         """, unsafe_allow_html=True)
 
 # --- BƯỚC 4: BÀI TẬP ---
