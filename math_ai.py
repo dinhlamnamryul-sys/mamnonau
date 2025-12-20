@@ -4,9 +4,9 @@ from gtts import gTTS
 from io import BytesIO
 import time
 import os
-import shutil # Thư viện hỗ trợ quản lý file mạnh hơn
+import shutil 
 
-# ================== 1. CẤU HÌNH & SỬA LỖI HỆ THỐNG ==================
+# ================== 1. CẤU HÌNH & KHỞI TẠO ==================
 st.set_page_config(
     page_title="Hệ Thống Giáo Dục Mầm Non AI",
     page_icon="🎓",
@@ -14,39 +14,33 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- PHẦN SỬA LỖI CRASH QUAN TRỌNG ---
+# Khởi tạo thư mục an toàn
 UPLOAD_FOLDER = "thu_vien_so"
-
 def init_upload_folder():
-    """Hàm khởi tạo thư mục an toàn, tránh lỗi NotADirectoryError"""
     try:
-        # Nếu 'thu_vien_so' tồn tại nhưng LÀ FILE (không phải thư mục) -> Xóa nó đi
         if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
             os.remove(UPLOAD_FOLDER)
-        
-        # Nếu chưa có thư mục -> Tạo mới
         if not os.path.exists(UPLOAD_FOLDER):
             os.makedirs(UPLOAD_FOLDER)
     except Exception as e:
-        st.error(f"Không thể tạo thư mục lưu trữ: {e}")
+        st.error(f"Lỗi khởi tạo: {e}")
 
-# Chạy hàm khởi tạo
 init_upload_folder()
 
 if "step" not in st.session_state: st.session_state.step = 1
 
-# ================== 2. CSS GIAO DIỆN (ĐIỀU CHỈNH) ==================
+# ================== 2. CSS GIAO DIỆN ==================
 st.markdown("""
 <style>
-    /* Nền gradient hồng phấn */
+    /* Nền gradient */
     .stApp {
-        background: linear-gradient(135deg, #FFF0F5 0%, #E6E6FA 100%);
+        background: linear-gradient(135deg, #FFF0F5 0%, #E0F7FA 100%);
         font-family: 'Comic Sans MS', cursive, sans-serif;
     }
 
     /* Card nội dung */
     .main-card {
-        background: rgba(255, 255, 255, 0.9);
+        background: rgba(255, 255, 255, 0.95);
         border-radius: 30px;
         padding: 30px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
@@ -59,7 +53,7 @@ st.markdown("""
     h1 { color: #FF69B4; text-shadow: 2px 2px 0 #fff; margin: 0; font-size: 2.5em;}
     .big-text { font-size: 24px; color: #555; margin-bottom: 20px;}
 
-    /* ICON NHÂN VẬT (Đã chỉnh lại size an toàn: 100px) */
+    /* ICON NHÂN VẬT */
     .char-icon {
         font-size: 100px; 
         margin: 5px;
@@ -86,10 +80,24 @@ st.markdown("""
         font-weight: bold;
         border: none;
         box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        color: white;
+        color: #444;
+        background: linear-gradient(45deg, #FF9A9E, #FECFEF);
     }
-    div.stButton > button { background: linear-gradient(45deg, #FF9A9E, #FECFEF); color: #444; }
     div.stButton > button:hover { transform: translateY(-3px); }
+    
+    /* Link Button style */
+    .link-btn {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+        padding: 10px;
+        border: 2px dashed #007bff;
+        border-radius: 10px;
+        display: block;
+        text-align: center;
+        margin-top: 10px;
+    }
+    .link-btn:hover { background-color: #e7f1ff; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -132,10 +140,22 @@ if "num" not in st.session_state: generate_math_question()
 # ================== 4. GIAO DIỆN SIDEBAR ==================
 with st.sidebar:
     st.image("https://cdn-icons-png.flaticon.com/512/3468/3468306.png", width=100)
-    st.markdown("## 🌈 MENU")
+    st.markdown("## 🌈 MENU CHỨC NĂNG")
+    
     menu = st.radio("", ["🐰 Bé Học Toán", "📂 Kho Học Liệu"], index=0)
+    
     st.markdown("---")
-    st.info("Lưu ý: Trên bản Online, dữ liệu tải lên có thể bị mất khi tải lại trang.")
+    st.info("💡 Mẹo: Bấm 'Đổi câu' để tạo bài tập mới.")
+    
+    # --- PHẦN LIÊN KẾT BẠN YÊU CẦU ---
+    st.markdown("---")
+    st.markdown("### 🔗 Liên kết tham khảo")
+    # Tạo một nút link đẹp
+    st.markdown("""
+        <a href="https://gemini.google.com/share/90bf889af5f6" target="_blank" class="link-btn">
+            🤖 Xem Chat Gemini Gốc
+        </a>
+    """, unsafe_allow_html=True)
 
 # ================== 5. CHỨC NĂNG 1: BÉ HỌC TOÁN ==================
 if menu == "🐰 Bé Học Toán":
@@ -217,7 +237,6 @@ elif menu == "📂 Kho Học Liệu":
     with st.expander("⬆️ Tải tài liệu mới", expanded=True):
         uploaded_files = st.file_uploader("Chọn file (Ảnh, Video, Nhạc)", accept_multiple_files=True)
         if uploaded_files:
-            # Kiểm tra lại thư mục lần nữa trước khi lưu
             init_upload_folder()
             for uploaded_file in uploaded_files:
                 path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
@@ -229,15 +248,10 @@ elif menu == "📂 Kho Học Liệu":
 
     st.markdown("---")
     
-    # --- PHẦN SỬA LỖI HIỂN THỊ FILE ---
     try:
         files = os.listdir(UPLOAD_FOLDER)
-    except FileNotFoundError:
-        init_upload_folder() # Tạo lại nếu mất
-        files = []
-    except NotADirectoryError:
-        os.remove(UPLOAD_FOLDER) # Xóa file lỗi
-        init_upload_folder() # Tạo lại folder
+    except:
+        init_upload_folder()
         files = []
         
     if not files:
