@@ -1,5 +1,4 @@
 streamlit
-deep-translator
+streamlit-lottie
+requests
 gTTS
-pip install streamlit-lottie requests
-
