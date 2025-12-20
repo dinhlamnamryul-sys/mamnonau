@@ -4,8 +4,9 @@ from gtts import gTTS
 from io import BytesIO
 import time
 import os
+import shutil # Thư viện hỗ trợ quản lý file mạnh hơn
 
-# ================== 1. CẤU HÌNH & KHỞI TẠO ==================
+# ================== 1. CẤU HÌNH & SỬA LỖI HỆ THỐNG ==================
 st.set_page_config(
     page_title="Hệ Thống Giáo Dục Mầm Non AI",
     page_icon="🎓",
@@ -13,84 +14,82 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# --- PHẦN SỬA LỖI CRASH QUAN TRỌNG ---
 UPLOAD_FOLDER = "thu_vien_so"
-if not os.path.exists(UPLOAD_FOLDER):
-    os.makedirs(UPLOAD_FOLDER)
+
+def init_upload_folder():
+    """Hàm khởi tạo thư mục an toàn, tránh lỗi NotADirectoryError"""
+    try:
+        # Nếu 'thu_vien_so' tồn tại nhưng LÀ FILE (không phải thư mục) -> Xóa nó đi
+        if os.path.exists(UPLOAD_FOLDER) and not os.path.isdir(UPLOAD_FOLDER):
+            os.remove(UPLOAD_FOLDER)
+        
+        # Nếu chưa có thư mục -> Tạo mới
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+    except Exception as e:
+        st.error(f"Không thể tạo thư mục lưu trữ: {e}")
+
+# Chạy hàm khởi tạo
+init_upload_folder()
 
 if "step" not in st.session_state: st.session_state.step = 1
 
-# ================== 2. CSS "LONG LANH" (ĐÃ CHỈNH SỬA) ==================
+# ================== 2. CSS GIAO DIỆN (ĐIỀU CHỈNH) ==================
 st.markdown("""
 <style>
-    /* Nền gradient hồng phấn dễ thương */
+    /* Nền gradient hồng phấn */
     .stApp {
-        background: linear-gradient(135deg, #fceeff 0%, #f5f7fa 100%);
-        background-size: 400% 400%;
+        background: linear-gradient(135deg, #FFF0F5 0%, #E6E6FA 100%);
         font-family: 'Comic Sans MS', cursive, sans-serif;
     }
 
-    /* Card nội dung chính */
+    /* Card nội dung */
     .main-card {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 35px;
-        padding: 40px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        border: 4px solid #fff;
+        background: rgba(255, 255, 255, 0.9);
+        border-radius: 30px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border: 3px solid #fff;
         text-align: center;
-        margin-bottom: 30px;
-    }
-
-    /* Sidebar kính mờ */
-    [data-testid="stSidebar"] {
-        background-color: rgba(255,255,255,0.6);
-        backdrop-filter: blur(12px);
-        border-right: 1px solid rgba(255,255,255,0.5);
+        margin-bottom: 25px;
     }
 
     /* Chữ tiêu đề */
-    h1 { color: #ff6b81; text-shadow: 2px 2px 0 #fff; margin: 0; font-size: 3em;}
-    .big-text { font-size: 28px; color: #555; margin-bottom: 20px;}
+    h1 { color: #FF69B4; text-shadow: 2px 2px 0 #fff; margin: 0; font-size: 2.5em;}
+    .big-text { font-size: 24px; color: #555; margin-bottom: 20px;}
 
-    /* ICON NHÂN VẬT SIÊU TO (Đã chỉnh sửa) */
+    /* ICON NHÂN VẬT (Đã chỉnh lại size an toàn: 100px) */
     .char-icon {
-        font-size: 110px; /* Tăng kích thước lên to đùng */
-        margin: 10px;
+        font-size: 100px; 
+        margin: 5px;
         display: inline-block;
-        filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+        filter: drop-shadow(0 4px 4px rgba(0,0,0,0.1));
         animation: float 3s ease-in-out infinite;
         cursor: pointer;
         transition: transform 0.2s;
     }
-    .char-icon:hover { transform: scale(1.2); }
+    .char-icon:hover { transform: scale(1.1); }
 
     @keyframes float {
         0% { transform: translateY(0px); }
-        50% { transform: translateY(-15px); }
+        50% { transform: translateY(-10px); }
         100% { transform: translateY(0px); }
     }
 
-    /* NÚT BẤM ĐẸP HƠN */
+    /* NÚT BẤM */
     div.stButton > button {
         width: 100%;
-        height: 70px; /* Nút cao hơn */
-        border-radius: 25px;
-        font-size: 24px;
+        height: 65px;
+        border-radius: 20px;
+        font-size: 22px;
         font-weight: bold;
         border: none;
-        box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-        transition: all 0.3s;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
         color: white;
     }
-
-    /* Màu riêng cho từng loại nút */
-    /* Nút thường (Mặc định streamlt) */
-    div.stButton > button { background: linear-gradient(45deg, #a18cd1, #fbc2eb); }
-    
-    /* Hiệu ứng hover chung */
-    div.stButton > button:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 20px rgba(0,0,0,0.2);
-    }
+    div.stButton > button { background: linear-gradient(45deg, #FF9A9E, #FECFEF); color: #444; }
+    div.stButton > button:hover { transform: translateY(-3px); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -136,12 +135,11 @@ with st.sidebar:
     st.markdown("## 🌈 MENU")
     menu = st.radio("", ["🐰 Bé Học Toán", "📂 Kho Học Liệu"], index=0)
     st.markdown("---")
-    st.info("💡 Bấm 'Đổi câu' để lấy bài mới ngẫu nhiên.")
+    st.info("Lưu ý: Trên bản Online, dữ liệu tải lên có thể bị mất khi tải lại trang.")
 
 # ================== 5. CHỨC NĂNG 1: BÉ HỌC TOÁN ==================
 if menu == "🐰 Bé Học Toán":
     
-    # --- Màn hình 1: Chào mừng ---
     if st.session_state.step == 1:
         st.markdown("""
         <div class="main-card">
@@ -158,39 +156,31 @@ if menu == "🐰 Bé Học Toán":
                 st.session_state.step = 2
                 st.rerun()
 
-    # --- Màn hình 2: Học đếm (Đã chỉnh to) ---
     elif st.session_state.step == 2:
-        # Tạo chuỗi HTML với class 'char-icon' mới (To hơn)
         img_html = "".join([f'<span class="char-icon">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
         
         st.markdown(f"""
         <div class="main-card">
             <p class="big-text">Bé hãy đếm xem có bao nhiêu <b>{st.session_state.name}</b>?</p>
             <div style="margin: 20px 0;">{img_html}</div>
-            <h1 style="font-size:90px; color:#ff4757; text-shadow: 3px 3px 0 #fad390;">{st.session_state.num}</h1>
+            <h1 style="font-size:80px; color:#ff4757;">{st.session_state.num}</h1>
         </div>
         """, unsafe_allow_html=True)
         
-        # CHỈNH SỬA: Thêm cột thứ 3 cho nút Đổi câu
         col1, col2, col3 = st.columns([1, 1, 1])
-        
         with col1:
             if st.button("🔊 Đọc"): 
                 play_sound(f"Có {st.session_state.num} {st.session_state.name}")
-        
         with col2:
-            # Nút đổi câu hỏi mới (Màu vàng cam)
             if st.button("🔄 Đổi Câu"):
                 generate_math_question()
                 st.rerun()
-
         with col3:
             if st.button("➡️ Bài Tập"):
                 play_sound("Bé hãy chọn đáp án đúng nhé", delay=2)
                 st.session_state.step = 3
                 st.rerun()
 
-    # --- Màn hình 3: Trắc nghiệm ---
     elif st.session_state.step == 3:
         img_html = "".join([f'<span class="char-icon">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
         
@@ -208,14 +198,13 @@ if menu == "🐰 Bé Học Toán":
                     if choice == st.session_state.num:
                         st.balloons()
                         play_sound("Hoan hô! Bé giỏi quá", delay=2)
-                        generate_math_question() # Tạo câu mới sau khi đúng
-                        st.session_state.step = 2 # Quay lại học bài mới
+                        generate_math_question()
+                        st.session_state.step = 2
                         st.rerun()
                     else:
                         st.error("Sai rồi")
-                        play_sound("Chưa đúng, bé đếm lại nhé")
+                        play_sound("Chưa đúng đâu")
         
-        # Nút quay lại học (nếu bé muốn đếm lại)
         st.write("")
         if st.button("⬅️ Quay lại đếm"):
             st.session_state.step = 2
@@ -228,6 +217,8 @@ elif menu == "📂 Kho Học Liệu":
     with st.expander("⬆️ Tải tài liệu mới", expanded=True):
         uploaded_files = st.file_uploader("Chọn file (Ảnh, Video, Nhạc)", accept_multiple_files=True)
         if uploaded_files:
+            # Kiểm tra lại thư mục lần nữa trước khi lưu
+            init_upload_folder()
             for uploaded_file in uploaded_files:
                 path = os.path.join(UPLOAD_FOLDER, uploaded_file.name)
                 with open(path, "wb") as f:
@@ -237,7 +228,18 @@ elif menu == "📂 Kho Học Liệu":
             st.rerun()
 
     st.markdown("---")
-    files = os.listdir(UPLOAD_FOLDER)
+    
+    # --- PHẦN SỬA LỖI HIỂN THỊ FILE ---
+    try:
+        files = os.listdir(UPLOAD_FOLDER)
+    except FileNotFoundError:
+        init_upload_folder() # Tạo lại nếu mất
+        files = []
+    except NotADirectoryError:
+        os.remove(UPLOAD_FOLDER) # Xóa file lỗi
+        init_upload_folder() # Tạo lại folder
+        files = []
+        
     if not files:
         st.info("Chưa có file nào.")
     else:
@@ -253,5 +255,8 @@ elif menu == "📂 Kho Học Liệu":
                     elif file_type == 'audio': st.audio(file_path)
                     
                     if st.button("🗑️ Xóa", key=f"del_{filename}"):
-                        os.remove(file_path)
-                        st.rerun()
+                        try:
+                            os.remove(file_path)
+                            st.rerun()
+                        except:
+                            st.error("Không xóa được file")
