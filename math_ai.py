@@ -4,136 +4,151 @@ from gtts import gTTS
 from io import BytesIO
 import time
 
-# ================== 1. CẤU HÌNH TRANG ==================
+# ================== 1. CẤU HÌNH TRANG CHUYÊN NGHIỆP ==================
 st.set_page_config(
-    page_title="Bé Vui Học Toán",
-    page_icon="🐰",
+    page_title="Math Kids Pro",
+    page_icon="🎓",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Khởi tạo biến
+# Khởi tạo biến Session
 if "step" not in st.session_state: st.session_state.step = 1
 if "num" not in st.session_state: st.session_state.num = 0
 
-# ================== 2. GIAO DIỆN (CSS GAME ĐẸP MẮT) ==================
+# ================== 2. CSS ĐẲNG CẤP (HIGH CONTRAST & 3D) ==================
 st.markdown("""
 <style>
-    /* Nền chuyển màu hoạt hình */
+    /* 1. NỀN CHUYỂN ĐỘNG MƯỢT MÀ */
     .stApp {
-        background: linear-gradient(-45deg, #a18cd1, #fbc2eb, #fad0c4, #ff9a9e);
-        background-size: 400% 400%;
-        animation: gradient 10s ease infinite;
-        font-family: 'Comic Sans MS', cursive, sans-serif;
-    }
-    @keyframes gradient {
-        0% {background-position: 0% 50%;}
-        50% {background-position: 100% 50%;}
-        100% {background-position: 0% 50%;}
+        background: linear-gradient(120deg, #84fab0 0%, #8fd3f4 100%);
+        font-family: 'Segoe UI', 'Roboto', Helvetica, Arial, sans-serif;
     }
 
-    /* Khung nội dung (Card) */
-    .game-card {
-        background: rgba(255, 255, 255, 0.9);
+    /* 2. KHUNG GAME (CARD) - TRẮNG SÁNG, BÓNG ĐỔ SÂU */
+    .pro-card {
+        background-color: #ffffff;
         border-radius: 40px;
-        padding: 30px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        border: 4px solid #fff;
+        padding: 40px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15); /* Bóng đổ mềm chuyên nghiệp */
         text-align: center;
+        border: 8px solid #fff;
         margin-top: 20px;
-        backdrop-filter: blur(10px);
+        position: relative;
     }
 
-    /* Tiêu đề câu hỏi */
-    .question {
-        font-size: 26px;
-        color: #555;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    /* Số học to đùng */
-    .big-number {
-        font-size: 150px;
+    /* 3. TYPOGRAPHY (CHỮ) */
+    h1 {
+        color: #2c3e50;
         font-weight: 900;
-        color: #ff6b81;
-        text-shadow: 4px 4px 0px #fff, 6px 6px 0px rgba(0,0,0,0.1);
-        margin: 0;
-        line-height: 1.2;
-        animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        font-size: 3.5rem !important;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+    }
+    .instruction {
+        font-size: 1.5rem;
+        color: #7f8c8d;
+        font-weight: 600;
+        margin-bottom: 30px;
     }
 
-    /* Icon nhân vật */
-    .char-item {
-        font-size: 80px;
-        margin: 5px;
-        display: inline-block;
-        transition: transform 0.2s;
-        cursor: pointer;
-        animation: float 3s ease-in-out infinite;
-    }
-    
-    @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
-    }
-    
-    @keyframes pop {
-        0% { transform: scale(0); opacity: 0; }
-        100% { transform: scale(1); opacity: 1; }
+    /* 4. SỐ HỌC SIÊU TO */
+    .super-number {
+        font-size: 180px;
+        line-height: 1;
+        font-weight: 900;
+        background: -webkit-linear-gradient(#ff9966, #ff5e62);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        filter: drop-shadow(4px 4px 0px rgba(0,0,0,0.1));
+        animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
     }
 
-    /* NÚT BẤM 3D */
+    /* 5. NÚT BẤM 3D (ĐIỂM NHẤN QUAN TRỌNG) */
     div.stButton > button {
         width: 100%;
-        height: 70px;
-        border-radius: 20px;
-        font-size: 22px;
-        font-weight: bold;
-        border: none;
+        height: 75px;
+        font-size: 24px;
+        font-weight: 800;
+        text-transform: uppercase;
         color: white;
-        margin-bottom: 10px;
-        transition: transform 0.1s;
-        box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+        border: none;
+        border-radius: 20px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.1s;
+        
+        /* Hiệu ứng 3D cứng cáp */
+        box-shadow: 0 8px 0 rgba(0,0,0,0.2); 
+        margin-bottom: 15px;
+        transform: translateY(0);
     }
+
+    /* Hiệu ứng khi bấm xuống */
     div.stButton > button:active {
-        transform: translateY(6px);
-        box-shadow: none;
+        transform: translateY(6px); /* Nút lún xuống */
+        box-shadow: 0 2px 0 rgba(0,0,0,0.2); /* Bóng giảm đi */
     }
-    
-    /* Màu nút tùy chỉnh */
-    .btn-green { background: #2ecc71 !important; } /* Nút Nghe */
-    .btn-blue { background: #3498db !important; }  /* Nút Tiếp */
-    .btn-orange { background: #f39c12 !important; } /* Nút Đổi */
 
-    /* Ẩn footer */
-    footer {visibility: hidden;}
-    #MainMenu {visibility: hidden;}
+    /* MÀU SẮC RIÊNG CHO TỪNG LOẠI NÚT (Dựa trên thứ tự) */
+    /* Nút 1: Xanh lá (Nghe/Bắt đầu) */
+    div.stButton > button:first-child { 
+        background: linear-gradient(to bottom, #2ecc71, #27ae60);
+    }
+    /* Nút 2: Vàng Cam (Đổi câu) */
+    div.stButton > button:nth-child(1) { 
+        background: linear-gradient(to bottom, #f1c40f, #f39c12);
+    }
+    /* Nút 3: Xanh Dương (Tiếp theo) */
+    div.stButton > button:last-child { 
+        background: linear-gradient(to bottom, #3498db, #2980b9);
+    }
 
+    /* 6. ICON HOẠT HÌNH */
+    .char-item {
+        font-size: 85px;
+        display: inline-block;
+        margin: 5px;
+        filter: drop-shadow(0 5px 5px rgba(0,0,0,0.1));
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+    @keyframes float { 0%, 100% {transform: translateY(0);} 50% {transform: translateY(-10px);} }
+
+    /* Ẩn các thành phần thừa */
+    #MainMenu, footer, header {visibility: hidden;}
 </style>
 """, unsafe_allow_html=True)
 
-# ================== 3. LOGIC HỆ THỐNG ==================
-def play_sound(text, delay=0):
+# ================== 3. LOGIC XỬ LÝ ÂM THANH (CHẶT CHẼ) ==================
+def play_sound_and_wait(text, wait_seconds):
+    """
+    Phát âm thanh và BẮT BUỘC CHỜ (Block) cho đến khi nói xong.
+    Điều này ngăn việc người dùng bấm loạn xạ hoặc âm thanh bị ngắt.
+    """
     try:
+        # 1. Phát âm thanh
         sound_file = BytesIO()
         tts = gTTS(text=text, lang='vi')
         tts.write_to_fp(sound_file)
         st.audio(sound_file, format='audio/mp3', autoplay=True)
-        if delay > 0:
-            with st.spinner("⏳ Cô đang nói..."):
-                time.sleep(delay)
-    except:
-        pass
+        
+        # 2. Hiện thông báo chờ (Spinner)
+        with st.spinner(f"🔊 Cô đang đọc: '{text}'..."):
+            time.sleep(wait_seconds) # Code sẽ dừng ở đây đúng số giây quy định
+            
+    except Exception as e:
+        st.error(f"Lỗi âm thanh: {e}")
 
-def generate_question():
+def generate_data():
     st.session_state.num = random.randint(1, 10)
     st.session_state.icon, st.session_state.name = random.choice([
-        ("🐰", "Chú Thỏ"), ("🍎", "Quả Táo"), ("⭐", "Ngôi Sao"), 
-        ("🎈", "Bóng Bay"), ("🍄", "Cây Nấm"), ("🐠", "Con Cá"),
-        ("🐣", "Gà Con"), ("🦋", "Bươm Bướm"), ("🚗", "Ô Tô")
+        ("🐰", "Thỏ"), ("🍎", "Táo"), ("⭐", "Sao"), 
+        ("🎈", "Bóng"), ("🍄", "Nấm"), ("🐠", "Cá"),
+        ("🚗", "Xe"), ("🦋", "Bướm")
     ])
-    # Tạo đáp án trắc nghiệm
+    # Tạo đáp án
     choices = [st.session_state.num]
     while len(choices) < 3:
         fake = random.randint(1, 10)
@@ -142,109 +157,107 @@ def generate_question():
     st.session_state.choices = choices
 
 if st.session_state.num == 0:
-    generate_question()
+    generate_data()
 
-# ================== 4. GIAO DIỆN CHÍNH (FLOW MỚI) ==================
+# ================== 4. GIAO DIỆN CHÍNH ==================
 
-# --- BƯỚC 1: MÀN HÌNH CHÀO ---
+# --- BƯỚC 1: MÀN HÌNH CHỜ (INTRO) ---
 if st.session_state.step == 1:
     st.markdown("""
-    <div class="game-card">
-        <div style="font-size: 100px;">👋</div>
-        <h1 style="color:#ff6b81;">BÉ VUI HỌC TOÁN</h1>
-        <p class="question">Chào mừng bé đến với lớp học AI</p>
+    <div class="pro-card">
+        <div style="font-size:100px; margin-bottom:20px;">🎒</div>
+        <h1>BÉ VUI HỌC TOÁN</h1>
+        <p class="instruction">Chương trình giáo dục sớm cho trẻ mầm non</p>
     </div>
     """, unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([1,2,1])
     with col2:
-        if st.button("🚀 BẮT ĐẦU HỌC"):
-            play_sound("Chào mừng bé! Hôm nay chúng mình cùng học số nhé!", delay=3)
+        if st.button("BẮT ĐẦU NGAY"):
+            # Chờ 3 giây để đọc xong câu chào mới chuyển trang
+            play_sound_and_wait("Chào mừng bé! Hôm nay lớp mình học số đếm nhé!", 3.5)
             st.session_state.step = 2
             st.rerun()
 
-# --- BƯỚC 2: NHẬN BIẾT SỐ (MỚI THÊM) ---
+# --- BƯỚC 2: NHẬN BIẾT MẶT SỐ (SỐ TO) ---
 elif st.session_state.step == 2:
     st.markdown(f"""
-    <div class="game-card">
-        <p class="question">Đố bé đây là số mấy?</p>
-        <p class="big-number">{st.session_state.num}</p>
+    <div class="pro-card">
+        <p class="instruction">Bé hãy nhìn xem đây là số mấy?</p>
+        <div class="super-number">{st.session_state.num}</div>
     </div>
     """, unsafe_allow_html=True)
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        # Nút nghe
-        if st.button("🔊 Nghe tên số"):
-            play_sound(f"Đây là số {st.session_state.num}")
+        if st.button("🔊 NGHE TÊN"):
+            play_sound_and_wait(f"Đây là số {st.session_state.num}", 2)
     with c2:
-        # Nút đổi số khác nếu bé chán
-        if st.button("🔄 Số khác"):
-            generate_question()
+        if st.button("🔄 ĐỔI SỐ"):
+            generate_data()
             st.rerun()
     with c3:
-        # Nút chuyển sang đếm hình
-        if st.button("➡️ Xem hình"):
-            play_sound(f"Đúng rồi, đây là số {st.session_state.num}. Bây giờ chúng mình cùng tập đếm nhé!", delay=4)
+        if st.button("➡️ XEM HÌNH"):
+            play_sound_and_wait(f"Đúng rồi! Số {st.session_state.num}. Cùng xem hình nhé!", 3)
             st.session_state.step = 3
             st.rerun()
 
-# --- BƯỚC 3: HỌC ĐẾM TƯƠNG ỨNG (CŨ LÀ BƯỚC 2) ---
+# --- BƯỚC 3: HỌC ĐẾM (SỐ + HÌNH ẢNH) ---
 elif st.session_state.step == 3:
-    # Tạo hình ảnh
+    # Render hình ảnh
     html_icons = "".join([f'<span class="char-item">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
     
     st.markdown(f"""
-    <div class="game-card">
-        <p class="question">Có bao nhiêu <b>{st.session_state.name}</b> ở đây nhỉ?</p>
-        <div style="min-height: 120px;">{html_icons}</div>
-        <hr style="border: 2px dashed #eee;">
-        <h1 style="font-size: 80px; color: #ff4757; margin:0;">{st.session_state.num}</h1>
+    <div class="pro-card">
+        <p class="instruction">Có bao nhiêu <b>{st.session_state.name}</b> ở đây nhỉ?</p>
+        <div style="min-height: 120px; margin: 20px 0;">{html_icons}</div>
+        <hr style="border-top: 2px dashed #ddd; margin: 20px 0;">
+        <h1 style="color:#e74c3c; font-size: 80px !important;">{st.session_state.num}</h1>
     </div>
     """, unsafe_allow_html=True)
-    
+
     c1, c2 = st.columns(2)
     with c1:
-        if st.button("🔊 Đếm cùng cô"):
-            play_sound(f"Có tất cả {st.session_state.num} {st.session_state.name}")
+        if st.button("🔊 ĐẾM CÙNG CÔ"):
+            play_sound_and_wait(f"Có tất cả {st.session_state.num} bạn {st.session_state.name}", 3)
     with c2:
-        if st.button("➡️ Làm bài tập"):
-            play_sound("Bây giờ bé hãy tự chọn đáp án đúng nhé!", delay=2.5)
+        if st.button("➡️ LÀM BÀI TẬP"):
+            play_sound_and_wait("Bây giờ bé hãy tự mình chọn đáp án đúng nhé!", 3)
             st.session_state.step = 4
             st.rerun()
 
-# --- BƯỚC 4: TRẮC NGHIỆM KIỂM TRA ---
+# --- BƯỚC 4: KIỂM TRA (CHỈ CÓ HÌNH) ---
 elif st.session_state.step == 4:
-    # Chỉ hiện hình, không hiện số
     html_icons = "".join([f'<span class="char-item">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
     
     st.markdown(f"""
-    <div class="game-card">
-        <p class="question">Bé hãy chọn số đúng cho hình này:</p>
-        <div style="min-height: 120px;">{html_icons}</div>
+    <div class="pro-card">
+        <p class="instruction">Bé hãy chọn số đúng cho hình này:</p>
+        <div style="min-height: 120px; margin-bottom: 30px;">{html_icons}</div>
     </div>
     """, unsafe_allow_html=True)
-    
-    # 3 Nút đáp án
+
+    # 3 Nút đáp án to
     cols = st.columns(3)
     for idx, choice in enumerate(st.session_state.choices):
         with cols[idx]:
-            if st.button(f"{choice}", key=f"ans_{idx}"):
+            # Logic xử lý đáp án
+            if st.button(f"{choice}", key=f"quiz_{idx}"):
                 if choice == st.session_state.num:
                     st.balloons()
-                    st.success("🎉 CHÍNH XÁC! BÉ GIỎI QUÁ!")
-                    play_sound("Hoan hô! Bé trả lời đúng rồi!", delay=2)
-                    
-                    # QUAY LẠI BƯỚC 2 (HỌC SỐ MỚI)
-                    generate_question()
-                    st.session_state.step = 2 
+                    # Chờ đọc xong lời khen mới chuyển bài
+                    play_sound_and_wait("Chính xác! Bé thông minh quá! Hoan hô!", 3)
+                    generate_data() # Tạo bài mới
+                    st.session_state.step = 2 # Quay về học số mới
                     st.rerun()
                 else:
-                    st.error("SAI RỒI! BÉ ĐẾM LẠI NHÉ!")
-                    play_sound("Chưa đúng đâu. Bé thử lại đi!")
+                    st.error("Chưa đúng!")
+                    play_sound_and_wait(f"Số {choice} chưa đúng. Bé nhìn kỹ và đếm lại nhé!", 3)
 
     st.write("")
-    # Nút quay lại học nếu quên
-    if st.button("⬅️ Quay lại học số"):
+    if st.button("⬅️ QUAY LẠI HỌC SỐ"):
         st.session_state.step = 2
         st.rerun()
+
+# Footer
+st.markdown("<div style='text-align:center; color:#fff; margin-top:30px; font-weight:bold'>Professional Kids Education AI © 2025</div>", unsafe_allow_html=True)
