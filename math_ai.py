@@ -36,6 +36,7 @@ st.markdown("""
         animation: floatCard 5s ease-in-out infinite;
         position: relative;
         z-index: 10;
+        min-height: 400px; /* Đảm bảo khung đủ cao */
     }
 
     @keyframes floatCard {
@@ -96,11 +97,11 @@ st.markdown("""
     
     .playground-area {
         margin-top: 30px;
-        height: 140px;
+        height: 160px; /* Tăng chiều cao lên chút cho thoáng */
         position: relative;
         width: 100%;
         overflow: hidden; 
-        background: rgba(255, 255, 255, 0.25); /* Nền kính mờ */
+        background: rgba(255, 255, 255, 0.4); /* Nền kính mờ */
         border-radius: 30px;
         border: 2px dashed rgba(255,255,255,0.6);
     }
@@ -108,8 +109,8 @@ st.markdown("""
     /* 1. VỊT BƠI (Duck) */
     @keyframes swim {
         0% { transform: translateX(-50px) scaleX(1); left: 0%; }
-        45% { transform: translateX(350px) scaleX(1); left: 0%;}
-        50% { transform: translateX(350px) scaleX(-1); left: 0%;} /* Quay đầu */
+        45% { transform: translateX(300px) scaleX(1); left: 0%;}
+        50% { transform: translateX(300px) scaleX(-1); left: 0%;} /* Quay đầu */
         95% { transform: translateX(-50px) scaleX(-1); left: 0%;}
         100% { transform: translateX(-50px) scaleX(1); left: 0%;}
     }
@@ -198,22 +199,22 @@ def generate_data():
 if st.session_state.num == 0:
     generate_data()
 
-# --- HÀM HTML TRANG TRÍ (ĐÃ SỬA LỖI HIỂN THỊ) ---
+# --- HÀM HTML TRANG TRÍ (ĐÃ SỬA LỖI THỤT DÒNG) ---
+# Quan trọng: Đoạn này phải viết sát lề trái, không được thụt vào.
 def get_decoration_html():
-    return """
-    <div class="playground-area">
-        <div class="duck-anim">🦆</div>
-        
-        <div class="flower-anim" style="left: 20px; font-size: 40px;">🌷</div>
-        <div class="flower-anim" style="left: 70px; font-size: 40px; animation-delay: 1s;">🌻</div>
-        <div class="flower-anim" style="right: 30px; font-size: 40px;">🍄</div>
-        <div class="bee-anim">🐝</div>
-        
-        <div class="bubble" style="left: 15%; width: 10px; height: 10px; animation-delay: 0s;"></div>
-        <div class="bubble" style="left: 55%; width: 15px; height: 15px; animation-delay: 2s;"></div>
-        <div class="bubble" style="left: 85%; width: 12px; height: 12px; animation-delay: 1s;"></div>
-    </div>
-    """
+    html_code = """
+<div class="playground-area">
+<div class="duck-anim">🦆</div>
+<div class="flower-anim" style="left: 20px; font-size: 40px;">🌷</div>
+<div class="flower-anim" style="left: 70px; font-size: 40px; animation-delay: 1s;">🌻</div>
+<div class="flower-anim" style="right: 30px; font-size: 40px;">🍄</div>
+<div class="bee-anim">🐝</div>
+<div class="bubble" style="left: 15%; width: 10px; height: 10px; animation-delay: 0s;"></div>
+<div class="bubble" style="left: 55%; width: 15px; height: 15px; animation-delay: 2s;"></div>
+<div class="bubble" style="left: 85%; width: 12px; height: 12px; animation-delay: 1s;"></div>
+</div>
+"""
+    return html_code
 
 # ================== 4. GIAO DIỆN CHÍNH ==================
 
@@ -227,7 +228,6 @@ if st.session_state.step == 1:
     </div>
     """, unsafe_allow_html=True)
     
-    # Hiển thị trang trí
     st.markdown(get_decoration_html(), unsafe_allow_html=True)
     
     c1, c2, c3 = st.columns([1,1,1])
@@ -273,7 +273,6 @@ elif st.session_state.step == 2:
         </div>
         """, unsafe_allow_html=True)
         
-        # SỬA LỖI: Gọi hàm đúng cách
         st.markdown(get_decoration_html(), unsafe_allow_html=True)
 
 # --- BƯỚC 3: HỌC ĐẾM ---
@@ -308,7 +307,6 @@ elif st.session_state.step == 3:
         </div>
         """, unsafe_allow_html=True)
         
-        # SỬA LỖI: Gọi hàm đúng cách
         st.markdown(get_decoration_html(), unsafe_allow_html=True)
 
 # --- BƯỚC 4: BÀI TẬP ---
@@ -356,5 +354,4 @@ elif st.session_state.step == 4:
                         st.error("Sai rồi!")
                         play_sound_and_wait("Chưa đúng rồi, bé thử lại nhé!", 2)
 
-        # SỬA LỖI: Gọi hàm đúng cách
         st.markdown(get_decoration_html(), unsafe_allow_html=True)
