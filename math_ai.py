@@ -1,172 +1,208 @@
-import streamlit as st
-import random
-from gtts import gTTS
-import uuid, os
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vườn Thỏ Diệu Kỳ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap" rel="stylesheet">
+    <style>
+        /* 1. Thiết lập chung */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Ẩn thanh cuộn */
+            font-family: 'Baloo 2', cursive;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F7FA 100%); /* Bầu trời xanh */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-# ================== HÀM PHÁT ÂM THANH ==================
-def phat_am_thanh(text):
-    filename = f"sound_{uuid.uuid4()}.mp3"
-    tts = gTTS(text=text, lang="vi")
-    tts.save(filename)
-    audio = open(filename, "rb").read()
-    st.audio(audio, format="audio/mp3", autoplay=True)
-    os.remove(filename)
+        /* 2. Phần trang trí nền (Mây và Cỏ) */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.8;
+            animation: floatCloud 20s linear infinite;
+        }
+        
+        .cloud:nth-child(1) { width: 100px; height: 40px; top: 10%; left: -10%; animation-duration: 25s; }
+        .cloud:nth-child(2) { width: 150px; height: 60px; top: 20%; left: -20%; animation-duration: 35s; animation-delay: 5s; }
+        .cloud:nth-child(3) { width: 80px; height: 30px; top: 15%; left: -15%; animation-duration: 18s; animation-delay: 10s; }
 
-# ================== SINH CÂU HỎI MỚI ==================
-def tao_cau_hoi_moi():
-    st.session_state.so = random.randint(1, 10)
-    st.session_state.hinh, st.session_state.ten = random.choice(list(do_vat.items()))
+        .grass {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(to top, #4CAF50, #8BC34A);
+            border-top-left-radius: 50% 20px;
+            border-top-right-radius: 50% 20px;
+            z-index: 1;
+        }
 
-# ================== CẤU HÌNH ==================
-st.set_page_config(
-    page_title="Bé đếm cùng Thỏ Con",
-    page_icon="🐰",
-    layout="centered"
-)
+        /* 3. Nhân vật Thỏ (Rabbit) */
+        .rabbit-container {
+            position: relative;
+            z-index: 10;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
 
-# ================== CSS ==================
-st.markdown("""
-<style>
-.stApp { background: linear-gradient(to bottom, #fffde7, #e1f5fe); }
-.card {
-    background: white;
-    padding: 25px;
-    border-radius: 25px;
-    text-align: center;
-    font-size: 26px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-.big { font-size: 48px; }
-.stButton>button {
-    font-size: 20px;
-    border-radius: 20px;
-    padding: 8px 20px;
-}
-</style>
-""", unsafe_allow_html=True)
+        .rabbit-container:active {
+            transform: scale(0.9); /* Hiệu ứng nhấn xuống */
+        }
 
-# ================== DỮ LIỆU ==================
-do_vat = {
-    "🍎": "quả táo",
-    "🐟": "con cá",
-    "🌸": "bông hoa",
-    "🐰": "con thỏ",
-    "🍌": "quả chuối"
-}
+        .rabbit-img {
+            width: 250px; /* Thỏ to, rõ ràng */
+            height: auto;
+            filter: drop-shadow(0 10px 10px rgba(0,0,0,0.2));
+            animation: bounce 3s infinite ease-in-out;
+        }
 
-chu_so = {
-    1: "Một", 2: "Hai", 3: "Ba", 4: "Bốn", 5: "Năm",
-    6: "Sáu", 7: "Bảy", 8: "Tám", 9: "Chín", 10: "Mười"
-}
+        /* Bong bóng lời thoại */
+        .speech-bubble {
+            position: absolute;
+            top: -60px;
+            right: -40px;
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            font-size: 1.2rem;
+            color: #FF6F00;
+            font-weight: 800;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-# ================== SESSION ==================
-if "buoc" not in st.session_state:
-    st.session_state.buoc = 1
-    tao_cau_hoi_moi()
+        .speech-bubble.show {
+            opacity: 1;
+            transform: scale(1);
+        }
 
-# ================== HEADER ==================
-st.markdown("""
-<div class="card">
-<h1>🐰 AI “BÉ ĐẾM CÙNG THỎ CON”</h1>
-<p>Học đếm số từ 1 đến 10</p>
-</div>
-""", unsafe_allow_html=True)
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: #fff transparent;
+        }
 
-st.markdown("---")
+        /* 4. Tiêu đề và Nút bấm */
+        .ui-container {
+            text-align: center;
+            z-index: 20;
+            margin-top: 20px;
+        }
 
-# ================== NÚT ĐIỀU HƯỚNG ==================
-col1, col2 = st.columns(2)
-with col1:
-    if st.button("⬅️ QUAY LẠI"):
-        if st.session_state.buoc > 1:
-            st.session_state.buoc -= 1
+        h1 {
+            color: #FF4081;
+            font-size: 3rem;
+            text-shadow: 3px 3px 0px #fff;
+            margin: 0 0 20px 0;
+            animation: wiggle 3s infinite;
+        }
 
-with col2:
-    if st.button("🔄 CÂU HỎI KHÁC"):
-        tao_cau_hoi_moi()
-        st.session_state.buoc = 2
+        .start-btn {
+            background-color: #FFC107;
+            color: #fff;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            font-family: 'Baloo 2', cursive;
+            font-weight: 800;
+            border-radius: 50px;
+            box-shadow: 0 8px 0 #FFA000, 0 15px 20px rgba(0,0,0,0.2);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+        }
 
-# ================== BƯỚC 1 ==================
-if st.session_state.buoc == 1:
-    st.markdown("""
-    <div class="card">
-    🐰 Xin chào các bạn nhỏ!<br>
-    Hôm nay chúng mình cùng đếm số nhé!
+        .start-btn:hover {
+            transform: translateY(-5px);
+            background-color: #FFD54F;
+            box-shadow: 0 13px 0 #FFA000, 0 20px 20px rgba(0,0,0,0.2);
+        }
+
+        .start-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 4px 0 #FFA000, 0 8px 10px rgba(0,0,0,0.2);
+        }
+
+        /* 5. Định nghĩa chuyển động (Animations) */
+        @keyframes floatCloud {
+            0% { transform: translateX(100vw); }
+            100% { transform: translateX(-200px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-3deg); }
+            50% { transform: rotate(3deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+
+    <div class="rabbit-container" onclick="rabbitTalk()">
+        <img src="https://cdn-icons-png.flaticon.com/512/3069/3069172.png" alt="Chú Thỏ" class="rabbit-img">
+        <div class="speech-bubble" id="bubble">Chào bé! Chơi với tớ đi! ❤️</div>
     </div>
-    """, unsafe_allow_html=True)
-    phat_am_thanh("Xin chào các bạn nhỏ! Hôm nay chúng mình cùng đếm số nhé!")
 
-    if st.button("👉 BẮT ĐẦU"):
-        st.session_state.buoc = 2
-
-# ================== BƯỚC 2 ==================
-elif st.session_state.buoc == 2:
-    st.markdown(f"""
-    <div class="card">
-    🐰 Bé hãy đếm cùng Thỏ Con nhé!
-    <p class="big">{st.session_state.hinh * st.session_state.so}</p>
-    👉 AI đọc: <b>{chu_so[st.session_state.so]}</b>
+    <div class="ui-container">
+        <h1>Bé Vui Học Toán</h1>
+        <button class="start-btn" onclick="startGame()">Vào Học Thôi!</button>
     </div>
-    """, unsafe_allow_html=True)
 
-    phat_am_thanh(chu_so[st.session_state.so])
+    <div class="grass"></div>
 
-    if st.button("➡️ LUYỆN TẬP"):
-        st.session_state.buoc = 3
+    <script>
+        // Hàm khi click vào thỏ
+        function rabbitTalk() {
+            const bubble = document.getElementById('bubble');
+            const messages = [
+                "Chào bé ngoan! 👋",
+                "Cùng học nhé! 📚",
+                "Bé giỏi quá! 🌟",
+                "Hi hi hi! 😂",
+                "Bấm nút màu vàng đi! 👇"
+            ];
+            
+            // Chọn ngẫu nhiên một câu nói
+            const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+            bubble.innerText = randomMsg;
+            
+            // Hiện bong bóng chat
+            bubble.classList.add('show');
 
-# ================== BƯỚC 3 ==================
-elif st.session_state.buoc == 3:
-    st.markdown(f"""
-    <div class="card">
-    🐰 Có bao nhiêu {st.session_state.ten}?
-    <p class="big">{st.session_state.hinh * st.session_state.so}</p>
-    </div>
-    """, unsafe_allow_html=True)
+            // Ẩn sau 2 giây
+            setTimeout(() => {
+                bubble.classList.remove('show');
+            }, 2000);
+        }
 
-    tra_loi = st.number_input("👉 Bé chọn số:", 1, 10, 1)
-
-    if st.button("✅ KIỂM TRA"):
-        if tra_loi == st.session_state.so:
-            st.balloons()
-            phat_am_thanh("Hoan hô! Bé làm đúng rồi!")
-            st.session_state.buoc = 4
-        else:
-            phat_am_thanh("Chưa đúng rồi! Con thử lại nhé!")
-
-# ================== BƯỚC 4 ==================
-elif st.session_state.buoc == 4:
-    dap_an = st.session_state.so + 1
-    st.markdown("""
-    <div class="card">
-    🐰 Số nào đứng sau số này?
-    </div>
-    """, unsafe_allow_html=True)
-    st.write(f"Số: **{st.session_state.so}**")
-
-    tra_loi = st.number_input("👉 Bé trả lời:", 1, 10, 1)
-
-    if st.button("✅ KIỂM TRA"):
-        if tra_loi == dap_an:
-            st.balloons()
-            phat_am_thanh("Rất giỏi! Con trả lời đúng!")
-            st.session_state.buoc = 5
-        else:
-            phat_am_thanh("Con suy nghĩ lại nhé!")
-
-# ================== BƯỚC 5 ==================
-elif st.session_state.buoc == 5:
-    st.balloons()
-    st.markdown("""
-    <div class="card">
-    🐰 Hôm nay con học rất giỏi!<br>
-    Hẹn gặp lại lần sau nhé!
-    </div>
-    """, unsafe_allow_html=True)
-    phat_am_thanh("Hôm nay con học rất giỏi! Hẹn gặp lại lần sau!")
-
-    if st.button("🔁 HỌC TIẾP CÂU KHÁC"):
-        tao_cau_hoi_moi()
-        st.session_state.buoc = 2
-
-st.markdown("---")
-st.caption("© 2025 – Sản phẩm AI mầm non - Nhóm tác giả: Lò Thị Hạnh - Quàng Thị Phương - Trần Thị Nguyệt Nga")
+        // Hàm khi bấm nút Bắt đầu
+        function startGame() {
+            // Hiệu ứng hoặc chuyển trang
+            alert("Chuyển đến bài học đầu tiên...");
+            // window.location.href = "bai-hoc-1.html"; // Bỏ comment dòng này để chuyển trang thật
+        }
+    </script>
+</body>
+</html>
