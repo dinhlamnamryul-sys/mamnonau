@@ -1,279 +1,247 @@
 import streamlit as st
-import requests
-from streamlit_lottie import st_lottie
-from gtts import gTTS
-import os
-import uuid
-import time
 import random
+from gtts import gTTS
+from io import BytesIO
+import time
 
-# ================== 1. CẤU HÌNH TRANG GAME ==================
-st.set_page_config(page_title="Khu Rừng Phép Thuật", page_icon="🍄", layout="wide")
+# ================== CẤU HÌNH TRANG ==================
+st.set_page_config(
+    page_title="Bé đếm cùng Thỏ Con",
+    page_icon="🐰",
+    layout="centered"
+)
 
-# ================== 2. TẢI TÀI NGUYÊN (HOẠT HÌNH & ẢNH) ==================
-def load_lottie(url):
-    try:
-        r = requests.get(url, timeout=3)
-        if r.status_code != 200: return None
-        return r.json()
-    except: return None
-
-# Hoạt hình Lottie (Link ổn định)
-anim_welcome = load_lottie("https://assets5.lottiefiles.com/packages/lf20_jcikwtux.json") # Cáo vẫy tay
-anim_star = load_lottie("https://assets9.lottiefiles.com/packages/lf20_touohxv0.json") # Sao vàng
-anim_confetti = load_lottie("https://assets2.lottiefiles.com/packages/lf20_u4y9eppv.json") # Pháo giấy
-anim_math = load_lottie("https://assets10.lottiefiles.com/packages/lf20_4kji20Y93r.json") # Số
-
-# ================== 3. CSS "THẦN TIÊN" ==================
+# ================== CSS GIAO DIỆN ĐẸP ==================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Patrick+Hand&display=swap');
-    
-    /* 1. Nền Rừng Xanh Phép Thuật */
-    .stApp {
-        background-image: url("https://img.freepik.com/free-vector/fairy-tale-landscape-with-meadow-tree-clouds_107791-744.jpg");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-        font-family: 'Patrick Hand', cursive;
-    }
-    
-    /* 2. Thanh điểm số (Hũ sao) */
-    .score-board {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(255, 255, 255, 0.9);
-        padding: 10px 20px;
-        border-radius: 50px;
-        border: 4px solid #FFD700;
-        font-size: 24px;
-        font-weight: bold;
-        color: #FF6F00;
-        z-index: 999;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-    }
+/* Nền ứng dụng */
+.stApp { 
+    background: linear-gradient(to bottom, #fffde7, #b3e5fc); 
+}
 
-    /* 3. Khung nội dung trắng mờ ảo */
-    .magic-box {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 30px;
-        padding: 30px;
-        margin-top: 20px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        border: 5px solid #81C784;
-        text-align: center;
-    }
+/* Thẻ card trắng */
+.card {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    border: 2px solid #fff;
+}
 
-    /* 4. Tiêu đề cute */
-    h1 {
-        font-family: 'Fredoka One', cursive;
-        color: #2E7D32 !important;
-        text-shadow: 3px 3px 0px #A5D6A7;
-        font-size: 60px !important;
-        text-align: center;
-    }
-    
-    h2, h3 {
-        font-family: 'Fredoka One', cursive;
-        color: #FF7043 !important;
-    }
+/* Chữ to cho bé dễ đọc */
+h1 { color: #d35400; font-family: 'Comic Sans MS', cursive; }
+.big-text { font-size: 24px; color: #2c3e50; }
+.emoji-display { font-size: 60px; line-height: 1.2; letter-spacing: 10px; }
+.number-big { font-size: 50px; color: #e74c3c; font-weight: bold; }
 
-    /* 5. Nút bấm biến hình */
-    .stButton>button {
-        width: 100%;
-        border-radius: 25px;
-        height: 70px;
-        font-size: 28px !important;
-        font-family: 'Fredoka One', cursive !important;
-        border: none;
-        box-shadow: 0 8px 0 rgba(0,0,0,0.2);
-        transition: all 0.2s;
-        margin-bottom: 10px;
-    }
-    
-    /* Màu nút bấm theo vị trí */
-    div[data-testid="column"]:nth-of-type(1) .stButton>button { background: #FFEE58; color: #F57F17; box-shadow: 0 8px 0 #F9A825; }
-    div[data-testid="column"]:nth-of-type(2) .stButton>button { background: #42A5F5; color: white; box-shadow: 0 8px 0 #1565C0; }
-    div[data-testid="column"]:nth-of-type(3) .stButton>button { background: #EC407A; color: white; box-shadow: 0 8px 0 #AD1457; }
-
-    .stButton>button:active {
-        transform: translateY(5px);
-        box-shadow: 0 2px 0 rgba(0,0,0,0.2) !important;
-    }
-    
-    /* Ẩn header mặc định */
-    header {visibility: hidden;}
-    footer {visibility: hidden;}
-    
+/* Nút bấm câu trả lời */
+div.stButton > button {
+    width: 100%;
+    height: 60px;
+    font-size: 24px;
+    font-weight: bold;
+    border-radius: 15px;
+    background-color: #ffffff;
+    border: 2px solid #4CAF50;
+    color: #4CAF50;
+    transition: all 0.3s;
+}
+div.stButton > button:hover {
+    background-color: #4CAF50;
+    color: white;
+    transform: scale(1.05);
+}
 </style>
 """, unsafe_allow_html=True)
 
-# ================== 4. QUẢN LÝ TRẠNG THÁI (SESSION) ==================
-if 'page' not in st.session_state: st.session_state.page = 'home'
-if 'stars' not in st.session_state: st.session_state.stars = 0 # Điểm số
-if 'music' not in st.session_state: st.session_state.music = True
+# ================== DỮ LIỆU ==================
+do_vat = {
+    "🍎": "quả táo",
+    "🐟": "con cá",
+    "🌸": "bông hoa",
+    "🐰": "con thỏ",
+    "🍌": "quả chuối",
+    "⭐": "ngôi sao",
+    "🎈": "bóng bay"
+}
 
-# Hàm điều hướng
-def navigate(page_name):
-    st.session_state.page = page_name
-    st.rerun()
+chu_so = {
+    1: "Một", 2: "Hai", 3: "Ba", 4: "Bốn", 5: "Năm",
+    6: "Sáu", 7: "Bảy", 8: "Tám", 9: "Chín", 10: "Mười"
+}
 
-# Hàm phát giọng nói
-def speak(text):
+# ================== HÀM HỖ TRỢ ==================
+def phat_am_thanh(text):
+    """Phát âm thanh không cần lưu file (tránh lỗi file locked)"""
     try:
-        filename = f"speech_{uuid.uuid4()}.mp3"
-        tts = gTTS(text=text, lang='vi')
-        tts.save(filename)
-        st.audio(open(filename, "rb").read(), format="audio/mp3", autoplay=True)
-        os.remove(filename)
-    except: pass
+        sound_file = BytesIO()
+        tts = gTTS(text=text, lang="vi")
+        tts.write_to_fp(sound_file)
+        st.audio(sound_file, format="audio/mp3", autoplay=True)
+    except Exception as e:
+        st.warning(f"Lỗi âm thanh: {e}")
 
-# ================== 5. THANH ĐIỂM SỐ (LUÔN HIỆN) ==================
-st.markdown(f"""
-<div class="score-board">
-    ⭐ Hũ Sao: {st.session_state.stars}
-</div>
-""", unsafe_allow_html=True)
+def tao_cau_hoi_moi():
+    st.session_state.so = random.randint(1, 10)
+    st.session_state.hinh, st.session_state.ten = random.choice(list(do_vat.items()))
+    # Tạo danh sách đáp án ngẫu nhiên cho trắc nghiệm
+    dap_an_dung = st.session_state.so
+    lua_chon = [dap_an_dung]
+    while len(lua_chon) < 3:
+        r = random.randint(1, 10)
+        if r not in lua_chon:
+            lua_chon.append(r)
+    random.shuffle(lua_chon)
+    st.session_state.lua_chon_buoc3 = lua_chon
 
-# ================== 6. TRANG CHỦ: BẢN ĐỒ KHO BÁU ==================
-if st.session_state.page == 'home':
-    # Hiệu ứng tiêu đề
-    st.markdown("<h1>🍄 KHU RỪNG PHÉP THUẬT 🍄</h1>", unsafe_allow_html=True)
-    
-    c1, c2, c3 = st.columns([1,2,1])
-    with c2:
-        if anim_welcome: st_lottie(anim_welcome, height=200, key="welcome")
-        st.markdown("<h3 style='text-align:center;'>Bé muốn đi đâu chơi nào?</h3>", unsafe_allow_html=True)
+def tao_cau_hoi_buoc4():
+    # Tạo đáp án cho bước tìm số liền sau
+    dap_an_dung = st.session_state.so + 1
+    lua_chon = [dap_an_dung]
+    while len(lua_chon) < 3:
+        r = random.randint(1, 11) # Có thể lên tới 11
+        if r not in lua_chon:
+            lua_chon.append(r)
+    random.shuffle(lua_chon)
+    st.session_state.lua_chon_buoc4 = lua_chon
 
-    # MENU CHÍNH (Dạng lưới đẹp mắt)
-    col_a, col_b, col_c = st.columns(3)
-    
-    with col_a:
-        st.markdown('<div class="magic-box" style="padding:10px;">', unsafe_allow_html=True)
-        if anim_math: st_lottie(anim_math, height=120, key="m1")
-        st.markdown("### Nhà Toán Học")
-        if st.button("VÀO HỌC 1️⃣2️⃣3️⃣"):
-            navigate('math')
-        st.markdown('</div>', unsafe_allow_html=True)
+# ================== KHỞI TẠO STATE ==================
+if "buoc" not in st.session_state:
+    st.session_state.buoc = 1
+    tao_cau_hoi_moi()
 
-    with col_b:
-        st.markdown('<div class="magic-box" style="padding:10px;">', unsafe_allow_html=True)
-        st.image("https://cdn-icons-png.flaticon.com/512/3659/3659784.png", width=120)
-        st.markdown("### Rạp Chiếu Phim")
-        if st.button("XEM PHIM 🍿"):
-            navigate('cinema')
-        st.markdown('</div>', unsafe_allow_html=True)
+# ================== HEADER ==================
+col_h1, col_h2 = st.columns([1, 4])
+with col_h1:
+    st.image("https://cdn-icons-png.flaticon.com/512/4712/4712009.png", width=80)
+with col_h2:
+    st.markdown("<h1>BÉ VUI HỌC TOÁN</h1>", unsafe_allow_html=True)
 
-    with col_c:
-        st.markdown('<div class="magic-box" style="padding:10px;">', unsafe_allow_html=True)
-        st.image("https://cdn-icons-png.flaticon.com/512/3043/3043665.png", width=120)
-        st.markdown("### Sàn Nhảy Múa")
-        if st.button("NGHE NHẠC 🎵"):
-            navigate('music')
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-    # Nút phát tiếng chào
-    if st.button("🔊 Nghe Cáo Chào"):
-        speak("Chào mừng bé đến với Khu Rừng Phép Thuật! Bé hãy chọn một trò chơi nhé!")
+# Thanh tiến trình
+progress = (st.session_state.buoc - 1) / 4
+st.progress(progress)
 
-# ================== 7. TRANG TOÁN: GIÚP THỎ TÌM CÀ RỐT ==================
-elif st.session_state.page == 'math':
-    if st.button("🔙 Về Nhà"): navigate('home')
-    
-    st.markdown('<div class="magic-box">', unsafe_allow_html=True)
-    
-    c_img, c_content = st.columns([1, 2])
-    with c_img:
-        st.image("https://cdn-icons-png.flaticon.com/512/1998/1998610.png", width=150) # Thỏ
-    with c_content:
-        st.markdown("## 🐰 Giúp Thỏ tìm Cà rốt!")
-        st.markdown("### Thỏ đang đói bụng quá. Bé hãy đếm xem có bao nhiêu củ cà rốt?")
-    
-    # Logic Game
-    if 'math_q' not in st.session_state: st.session_state.math_q = random.randint(1, 5)
-    
-    # Hiển thị Cà rốt (Hình ảnh to đẹp)
-    carrots = "".join(["<img src='https://cdn-icons-png.flaticon.com/512/2909/2909787.png' width='60' style='margin:5px;'>"] * st.session_state.math_q)
-    st.markdown(f"<div style='background:#FFF3E0; padding:20px; border-radius:20px;'>{carrots}</div>", unsafe_allow_html=True)
-    
-    st.write("")
-    
-    # Đáp án
-    cols = st.columns(3)
-    ans_list = [st.session_state.math_q, st.session_state.math_q+1, abs(st.session_state.math_q-1)]
-    if ans_list[2] == 0: ans_list[2] = 2
-    ans_list = list(set(ans_list)) # Lọc trùng
-    while len(ans_list) < 3: ans_list.append(random.randint(1,9))
-    random.shuffle(ans_list)
-
-    def check_math(val):
-        if val == st.session_state.math_q:
-            st.session_state.stars += 1 # Cộng điểm
-            st.balloons()
-            speak("Giỏi quá! Cảm ơn bé đã cho Thỏ ăn!")
-            time.sleep(1.5)
-            st.session_state.math_q = random.randint(1, 9)
+# ================== ĐIỀU HƯỚNG ==================
+if st.session_state.buoc > 1 and st.session_state.buoc < 5:
+    c1, c2 = st.columns([1, 4])
+    with c1:
+        if st.button("⬅️", help="Quay lại"):
+            st.session_state.buoc -= 1
             st.rerun()
-        else:
-            st.error("Chưa đúng rồi, Thỏ vẫn đói quá!")
-            speak("Chưa đúng rồi, bé đếm lại đi!")
 
-    for i, num in enumerate(ans_list):
-        with cols[i]:
-            if st.button(f"SỐ {num}", key=f"btn_{num}"):
-                check_math(num)
-                
-    st.markdown('</div>', unsafe_allow_html=True)
+# ================== NỘI DUNG CHÍNH ==================
 
-# ================== 8. TRANG PHIM: CÂU CHUYỆN RỪNG XANH ==================
-elif st.session_state.page == 'cinema':
-    if st.button("🔙 Về Nhà"): navigate('home')
+# --- BƯỚC 1: CHÀO HỎI ---
+if st.session_state.buoc == 1:
+    st.markdown("""
+    <div class="card">
+        <h2 style='color:#e67e22'>🐰 Xin chào bé yêu!</h2>
+        <p class="big-text">Hôm nay Thỏ Con sẽ cùng bé học đếm nhé!</p>
+        <p>Bé đã sẵn sàng chưa nào?</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    st.markdown('<div class="magic-box">', unsafe_allow_html=True)
-    st.markdown("## 🍿 Rạp Chiếu Phim Cổ Tích")
-    
-    story_choice = st.selectbox("Bé muốn nghe chuyện gì?", ["Cáo và Cò", "Kiến và Ve Sầu", "Sư Tử và Chuột"])
-    
-    if story_choice == "Cáo và Cò":
-        st.video("https://www.youtube.com/watch?v=k_q9461iCw4") # Link minh họa (thay bằng link đúng nếu có)
-        st.info("Bài học: Phải biết tôn trọng bạn bè.")
-    elif story_choice == "Kiến và Ve Sầu":
-        st.video("https://www.youtube.com/watch?v=2r7J_gC_4t0") # Link minh họa
-        st.info("Bài học: Phải chăm chỉ lao động.")
-    else:
-        st.video("https://www.youtube.com/watch?v=7uJf1X2yX1o") # Link minh họa
-        st.info("Bài học: Đừng coi thường người nhỏ bé.")
-        
-    if st.button("⭐ Xem xong nhận Sao"):
-        st.session_state.stars += 1
-        st.balloons()
+    # Chỉ phát âm thanh 1 lần khi load trang
+    if "welcomed" not in st.session_state:
+        phat_am_thanh("Xin chào các bạn nhỏ! Hôm nay chúng mình cùng đếm số nhé!")
+        st.session_state.welcomed = True
+
+    if st.button("🚀 BẮT ĐẦU THÔI!", type="primary"):
+        st.session_state.buoc = 2
         st.rerun()
-        
-    st.markdown('</div>', unsafe_allow_html=True)
 
-# ================== 9. TRANG NHẠC: VŨ ĐIỆU SÔI ĐỘNG ==================
-elif st.session_state.page == 'music':
-    if st.button("🔙 Về Nhà"): navigate('home')
-    
-    st.markdown('<div class="magic-box">', unsafe_allow_html=True)
-    st.markdown("## 🎵 Sàn Nhảy Mùa Hè")
-    
-    col_anim, col_list = st.columns([1,2])
-    
-    with col_anim:
-        # Nhúng ảnh GIF nhảy múa
-        st.markdown('<img src="https://media.giphy.com/media/hWY5z84uXF3wjpxG5X/giphy.gif" width="100%">', unsafe_allow_html=True)
-    
-    with col_list:
-        st.markdown("### Bé chọn bài hát nhé:")
-        song = st.radio("", ["Baby Shark 🦈", "Một Con Vịt 🦆", "Cả Nhà Thương Nhau 👨‍👩‍👧"])
-        
-        if song == "Baby Shark 🦈":
-            st.video("https://www.youtube.com/watch?v=XqZsoesa55w")
-        elif song == "Một Con Vịt 🦆":
-            st.video("https://www.youtube.com/watch?v=3182wcMhXuk")
-        else:
-            st.video("https://www.youtube.com/watch?v=sJ16X-Rz8vU")
+# --- BƯỚC 2: HỌC ĐẾM ---
+elif st.session_state.buoc == 2:
+    st.markdown(f"""
+    <div class="card">
+        <p class="big-text">Bé hãy đếm xem có bao nhiêu <b>{st.session_state.ten}</b>?</p>
+        <div class="emoji-display">{st.session_state.hinh * st.session_state.so}</div>
+        <p class="big-text">Đáp án là số:</p>
+        <p class="number-big">{st.session_state.so}</p>
+        <p style="color:gray">({chu_so[st.session_state.so]})</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown('</div>', unsafe_allow_html=True)
+    # Nút nghe lại
+    if st.button("🔊 Nghe Thỏ đọc"):
+        phat_am_thanh(f"Có {chu_so[st.session_state.so]} {st.session_state.ten}")
+
+    st.write("")
+    if st.button("➡️ Sang bài tập tiếp theo", type="primary"):
+        st.session_state.buoc = 3
+        st.rerun()
+
+# --- BƯỚC 3: KIỂM TRA ĐẾM (TRẮC NGHIỆM) ---
+elif st.session_state.buoc == 3:
+    st.markdown(f"""
+    <div class="card">
+        <p class="big-text">Đố bé biết có bao nhiêu <b>{st.session_state.ten}</b>?</p>
+        <div class="emoji-display">{st.session_state.hinh * st.session_state.so}</div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<h3 style='text-align:center'>Bé hãy chọn một số nhé:</h3>", unsafe_allow_html=True)
+    
+    # Hiển thị 3 nút bấm to
+    cols = st.columns(3)
+    for i, so in enumerate(st.session_state.lua_chon_buoc3):
+        with cols[i]:
+            if st.button(f"{so}", key=f"btn_b3_{i}"):
+                if so == st.session_state.so:
+                    st.success("Tuyệt vời! Bé chọn đúng rồi!")
+                    phat_am_thanh("Hoan hô! Bé làm đúng rồi!")
+                    time.sleep(1) # Đợi 1 chút cho bé nghe
+                    tao_cau_hoi_buoc4() # Chuẩn bị cho bước 4
+                    st.session_state.buoc = 4
+                    st.rerun()
+                else:
+                    st.error("Chưa đúng, bé đếm lại nhé!")
+                    phat_am_thanh("Sai rồi, con thử lại nhé!")
+
+# --- BƯỚC 4: TÌM SỐ LIỀN SAU ---
+elif st.session_state.buoc == 4:
+    st.markdown(f"""
+    <div class="card">
+        <p class="big-text">Câu hỏi khó hơn nè!</p>
+        <p class="big-text">Số nào đứng ngay sau số <b style='color:red; font-size:40px'>{st.session_state.so}</b>?</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<h3 style='text-align:center'>Chọn đáp án đúng:</h3>", unsafe_allow_html=True)
+    
+    cols = st.columns(3)
+    dap_an = st.session_state.so + 1
+    
+    for i, so in enumerate(st.session_state.lua_chon_buoc4):
+        with cols[i]:
+            if st.button(f"{so}", key=f"btn_b4_{i}"):
+                if so == dap_an:
+                    st.balloons()
+                    phat_am_thanh("Xuất sắc! Con thông minh quá!")
+                    time.sleep(1.5)
+                    st.session_state.buoc = 5
+                    st.rerun()
+                else:
+                    st.error(f"Sau số {st.session_state.so} không phải là {so} đâu.")
+                    phat_am_thanh("Chưa đúng rồi, con suy nghĩ thêm nhé!")
+
+# --- BƯỚC 5: KẾT THÚC ---
+elif st.session_state.buoc == 5:
+    st.markdown("""
+    <div class="card" style="background-color: #e8f5e9;">
+        <h1 style="color:green">🏆 CHÚC MỪNG BÉ!</h1>
+        <p class="big-text">Con đã hoàn thành bài học rất xuất sắc.</p>
+        <img src="https://media.giphy.com/media/u2pmTWUi0GjTO/giphy.gif" width="200">
+    </div>
+    """, unsafe_allow_html=True)
+    
+    if st.button("🔄 HỌC TIẾP CÂU KHÁC", type="primary"):
+        tao_cau_hoi_moi()
+        st.session_state.buoc = 2
+        st.rerun()
+
+# ================== FOOTER ==================
+st.markdown("---")
+st.caption("© 2025 – Sản phẩm AI Mầm Non - Nhóm tác giả: Lò Thị Hạnh - Quàng Thị Phương - Trần Thị Nguyệt Nga")
