@@ -25,7 +25,7 @@ st.markdown("""
         font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
     }
 
-    /* Card hiển thị - Để nổi lên trên nền động */
+    /* Card hiển thị - Nổi lên trên cùng */
     .game-card {
         background-color: rgba(255, 255, 255, 0.95);
         border-radius: 40px;
@@ -35,7 +35,7 @@ st.markdown("""
         border: 6px solid #fff;
         animation: floatCard 5s ease-in-out infinite;
         position: relative;
-        z-index: 100; /* Nổi lên trên con vịt */
+        z-index: 100; /* Quan trọng: Nổi trên các con vật */
         min-height: 350px;
     }
 
@@ -68,7 +68,7 @@ st.markdown("""
         box-shadow: 0 5px 0 rgba(0,0,0,0.15);
         transition: all 0.2s;
         position: relative;
-        z-index: 101; /* Nổi lên trên mọi thứ để bấm được */
+        z-index: 101; /* Nổi lên trên cùng để bấm được */
     }
 
     div.stButton > button:active {
@@ -96,37 +96,36 @@ st.markdown("""
     }
 
     /* ============================================================
-       KHU VỰC ANIMATION TOÀN MÀN HÌNH (FULL SCREEN)
+       ANIMATION (Full Screen)
        ============================================================ */
     
-    /* Lớp phủ toàn màn hình nhưng không chặn chuột (pointer-events: none) */
     .full-screen-anim {
         position: fixed;
         top: 0;
         left: 0;
         width: 100vw;
         height: 100vh;
-        pointer-events: none; /* QUAN TRỌNG: Cho phép bấm xuyên qua */
+        pointer-events: none; /* Cho phép bấm xuyên qua hình */
         z-index: 1;
         overflow: hidden;
     }
 
-    /* 1. VỊT BƠI NGANG MÀN HÌNH */
+    /* VỊT BƠI */
     @keyframes swim-screen {
-        0% { left: -10vw; transform: scaleX(1); }
-        45% { left: 110vw; transform: scaleX(1); }
-        50% { left: 110vw; transform: scaleX(-1); } /* Quay đầu */
-        95% { left: -10vw; transform: scaleX(-1); }
-        100% { left: -10vw; transform: scaleX(1); }
+        0% { left: -150px; transform: scaleX(1); }
+        45% { left: 100vw; transform: scaleX(1); }
+        50% { left: 100vw; transform: scaleX(-1); }
+        95% { left: -150px; transform: scaleX(-1); }
+        100% { left: -150px; transform: scaleX(1); }
     }
     .duck-anim {
         position: absolute;
-        bottom: 20px; /* Bơi ở dưới cùng màn hình */
+        bottom: 20px;
         font-size: 80px;
-        animation: swim-screen 20s linear infinite;
+        animation: swim-screen 25s linear infinite;
     }
 
-    /* 2. ONG BAY LƯỢN TỰ DO */
+    /* ONG BAY */
     @keyframes fly-screen {
         0%   { top: 10vh; left: -10vw; }
         25%  { top: 20vh; left: 30vw; transform: rotate(10deg); }
@@ -137,33 +136,19 @@ st.markdown("""
     .bee-anim {
         position: absolute;
         font-size: 50px;
-        animation: fly-screen 15s linear infinite;
+        animation: fly-screen 20s linear infinite;
     }
 
-    /* 3. BONG BÓNG BAY LÊN CAO */
+    /* BONG BÓNG */
     @keyframes rise-screen {
-        0% { bottom: -10vh; opacity: 0; transform: scale(0.5); }
+        0% { bottom: -50px; opacity: 0; transform: scale(0.5); }
         50% { opacity: 0.6; }
-        100% { bottom: 110vh; opacity: 0; transform: scale(1.5); }
+        100% { bottom: 100vh; opacity: 0; transform: scale(1.5); }
     }
     .bubble {
         position: absolute;
         background: rgba(255,255,255,0.6);
         border-radius: 50%;
-        z-index: 0;
-    }
-
-    /* 4. MÂY TRÔI LỜ LỮNG */
-    @keyframes cloud-move {
-        from { left: -20vw; }
-        to { left: 120vw; }
-    }
-    .cloud {
-        position: absolute;
-        color: rgba(255,255,255,0.8);
-        font-size: 100px;
-        top: 50px;
-        animation: cloud-move 40s linear infinite;
     }
 
 </style>
@@ -198,36 +183,18 @@ def generate_data():
 if st.session_state.num == 0:
     generate_data()
 
-# --- HÀM HTML TRANG TRÍ (FULL SCREEN) ---
-# Các con vật này sẽ nằm đè lên nền trang web nhưng dưới các nút bấm
+# --- HÀM HTML TRANG TRÍ (ĐÃ SỬA LỖI HIỂN THỊ TEXT) ---
+# Tôi đã gộp thành 1 dòng để tránh lỗi thụt đầu dòng của Python
 def get_decoration_html():
-    return """
-<div class="full-screen-anim">
-    <div class="cloud" style="top: 5vh; animation-duration: 60s;">☁️</div>
-    <div class="cloud" style="top: 15vh; left: -10vw; font-size: 80px; animation-duration: 45s; animation-delay: 5s;">☁️</div>
-
-    <div class="duck-anim">🦆</div>
-    
-    <div class="bee-anim">🐝</div>
-    <div class="bee-anim" style="animation-delay: 7s; top: 40vh; font-size: 35px;">🐝</div>
-    
-    <div style="position: absolute; bottom: 10px; left: 5vw; font-size: 50px;">🌷</div>
-    <div style="position: absolute; bottom: 15px; left: 12vw; font-size: 40px;">🌻</div>
-    <div style="position: absolute; bottom: 10px; right: 5vw; font-size: 50px;">🍄</div>
-    
-    <div class="bubble" style="left: 10vw; width: 30px; height: 30px; animation: rise-screen 10s infinite;"></div>
-    <div class="bubble" style="left: 30vw; width: 50px; height: 50px; animation: rise-screen 15s infinite 2s;"></div>
-    <div class="bubble" style="left: 70vw; width: 20px; height: 20px; animation: rise-screen 12s infinite 5s;"></div>
-    <div class="bubble" style="left: 90vw; width: 40px; height: 40px; animation: rise-screen 18s infinite 1s;"></div>
-</div>
-"""
+    return """<div class="full-screen-anim"><div class="duck-anim">🦆</div><div class="bee-anim">🐝</div><div class="bee-anim" style="animation-delay: 10s; top: 40vh; font-size: 35px;">🐝</div><div style="position: absolute; bottom: 10px; left: 5vw; font-size: 50px;">🌷</div><div style="position: absolute; bottom: 15px; left: 12vw; font-size: 40px;">🌻</div><div style="position: absolute; bottom: 10px; right: 5vw; font-size: 50px;">🍄</div><div class="bubble" style="left: 10vw; width: 30px; height: 30px; animation: rise-screen 10s infinite;"></div><div class="bubble" style="left: 30vw; width: 50px; height: 50px; animation: rise-screen 15s infinite 2s;"></div><div class="bubble" style="left: 70vw; width: 20px; height: 20px; animation: rise-screen 12s infinite 5s;"></div><div class="bubble" style="left: 90vw; width: 40px; height: 40px; animation: rise-screen 18s infinite 1s;"></div></div>"""
 
 # ================== 4. GIAO DIỆN CHÍNH ==================
 
+# Gọi hàm hiển thị hoạt hình ngay đầu chương trình để nó áp dụng cho mọi trang
+st.markdown(get_decoration_html(), unsafe_allow_html=True)
+
 # --- BƯỚC 1: TRANG CHỦ ---
 if st.session_state.step == 1:
-    st.markdown(get_decoration_html(), unsafe_allow_html=True) # Gọi animation ngay đầu
-    
     st.markdown("""
     <div class="game-card" style="padding: 50px;">
         <div style="font-size:100px; margin-bottom:10px;">🎡</div>
@@ -246,8 +213,6 @@ if st.session_state.step == 1:
 
 # --- BƯỚC 2: HỌC SỐ ---
 elif st.session_state.step == 2:
-    st.markdown(get_decoration_html(), unsafe_allow_html=True) # Gọi animation
-
     col_controls, col_display = st.columns([3, 7], gap="large")
 
     with col_controls:
@@ -282,8 +247,6 @@ elif st.session_state.step == 2:
 
 # --- BƯỚC 3: HỌC ĐẾM ---
 elif st.session_state.step == 3:
-    st.markdown(get_decoration_html(), unsafe_allow_html=True) # Gọi animation
-
     html_icons = "".join([f'<span class="char-item">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
     
     col_controls, col_display = st.columns([3, 7], gap="large")
@@ -316,8 +279,6 @@ elif st.session_state.step == 3:
 
 # --- BƯỚC 4: BÀI TẬP ---
 elif st.session_state.step == 4:
-    st.markdown(get_decoration_html(), unsafe_allow_html=True) # Gọi animation
-
     html_icons = "".join([f'<span class="char-item">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
     
     col_controls, col_display = st.columns([3, 7], gap="large")
