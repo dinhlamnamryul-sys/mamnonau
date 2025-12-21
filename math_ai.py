@@ -197,8 +197,8 @@ st.markdown(get_decoration_html(), unsafe_allow_html=True)
 if st.session_state.step == 1:
     st.markdown("""
     <div class="game-card" style="padding: 50px;">
-        <div style="font-size:100px; margin-bottom:10px;">🎡</div>
-        <h1 style="color:#ff4757; font-size:50px;">BÉ VUI HỌC TOÁN</h1>
+        <div style="font-size:100px; margin-bottom:10px;">🐰</div>
+        <h1 style="color:#ff4757; font-size:50px;">Bé Đếm Cùng Thỏ Con</h1>
         <p class="instruction">Học mà chơi - Chơi mà học</p>
     </div>
     """, unsafe_allow_html=True)
@@ -321,4 +321,5 @@ elif st.session_state.step == 4:
                     else:
                         st.error("Sai rồi!")
                         play_sound_and_wait("Chưa đúng rồi, bé thử lại nhé!", 2)
+
 
