@@ -63,11 +63,23 @@ st.markdown("""
     }
 
     .rabbit-hero {
-        max-width: 120px; /* ĐÃ CHỈNH NHỎ LẠI (Cũ là 200px) */
+        max-width: 120px;
         height: auto;
         margin-bottom: 20px;
         filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2));
         animation: rabbitJump 3s infinite ease-in-out;
+    }
+
+    /* CSS CHO THỎ Ở GÓC DƯỚI (BƯỚC 2) */
+    .rabbit-corner {
+        max-width: 100px; /* Kích thước nhỏ hơn cho phù hợp */
+        margin-top: 20px; /* Khoảng cách với các nút */
+        filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2));
+        animation: rabbitJump 3s infinite ease-in-out; /* Áp dụng animation nhảy */
+        /* Định vị để nằm ở góc dưới bên trái của cột điều khiển */
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     /* Số khổng lồ */
@@ -183,17 +195,12 @@ st.markdown("""
 # ================== 3. HÀM XỬ LÝ LOGIC ==================
 def play_sound_and_wait(text, manual_wait=0):
     try:
-        # 1. Phát âm thanh
         sound_file = BytesIO()
         tts = gTTS(text=text, lang='vi')
         tts.write_to_fp(sound_file)
         st.audio(sound_file, format='audio/mp3', autoplay=True)
         
-        # 2. Tính toán thời gian chờ thông minh
-        # Trung bình đọc 1 từ mất 0.4s. Cộng thêm 1.5s để khởi động và dư âm.
         calculated_wait = (len(text.split()) * 0.45) + 2.0
-        
-        # Lấy thời gian lớn nhất giữa: thời gian tính toán VÀ thời gian thủ công bạn nhập
         final_wait = max(calculated_wait, manual_wait)
 
         with st.spinner(f"🔊 Cô đang nói..."):
@@ -249,7 +256,6 @@ if st.session_state.step == 1:
     with c2:
         st.markdown("""<style>div.stButton > button {background: linear-gradient(to bottom, #ff6b6b, #ee5253); height: 80px; font-size: 24px !important;}</style>""", unsafe_allow_html=True)
         if st.button("🚀 BẮT ĐẦU NGAY"):
-            # Câu chào này dài, hàm play_sound_and_wait sẽ tự tính thời gian (khoảng 6-7s)
             play_sound_and_wait("Chào mừng bé! Hôm nay chúng mình cùng học số đếm nhé!")
             st.session_state.step = 2
             st.rerun()
@@ -279,6 +285,11 @@ elif st.session_state.step == 2:
             play_sound_and_wait(f"Đúng rồi! Số {st.session_state.num}. Cùng xem hình nhé!")
             st.session_state.step = 3
             st.rerun()
+        
+        # --- CHÈN THỎ VÀO GÓC DƯỚI BÊN TRÁI ---
+        img_b64 = get_base64_image("thocon.png")
+        if img_b64:
+            st.markdown(f'<img src="data:image/png;base64,{img_b64}" class="rabbit-corner">', unsafe_allow_html=True)
 
     with col_display:
         st.markdown(f"""
