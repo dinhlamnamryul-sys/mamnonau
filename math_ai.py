@@ -44,9 +44,10 @@ st.markdown("""
         text-align: center;
         border: 6px solid #fff;
         animation: floatCard 5s ease-in-out infinite;
-        position: relative;
-        z-index: 100; /* Quan trọng: Nổi trên các con vật */
+        position: relative; /* Để có thể đặt thỏ tuyệt đối theo khung này */
+        z-index: 100;
         min-height: 350px;
+        margin-top: 40px; /* Thêm khoảng trống bên trên để thỏ không bị che */
     }
 
     @keyframes floatCard {
@@ -54,7 +55,7 @@ st.markdown("""
         50% { transform: translateY(-10px); }
     }
     
-    /* ANIMATION RIÊNG CHO THỎ CON (USER IMAGE) */
+    /* ANIMATION CHUNG CHO THỎ */
     @keyframes rabbitJump {
         0%, 100% { transform: translateY(0px) rotate(0deg) scale(1); }
         25% { transform: translateY(-15px) rotate(-5deg) scale(1.05); }
@@ -62,6 +63,7 @@ st.markdown("""
         75% { transform: translateY(-5px) rotate(5deg) scale(1.02); }
     }
 
+    /* 1. Thỏ ở trang chủ (Giữ nguyên) */
     .rabbit-hero {
         max-width: 120px;
         height: auto;
@@ -70,16 +72,16 @@ st.markdown("""
         animation: rabbitJump 3s infinite ease-in-out;
     }
 
-    /* CSS CHO THỎ Ở GÓC DƯỚI (BƯỚC 2) */
-    .rabbit-corner {
-        max-width: 100px; /* Kích thước nhỏ hơn cho phù hợp */
-        margin-top: 20px; /* Khoảng cách với các nút */
-        filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2));
-        animation: rabbitJump 3s infinite ease-in-out; /* Áp dụng animation nhảy */
-        /* Định vị để nằm ở góc dưới bên trái của cột điều khiển */
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
+    /* 2. THỎ "PEEK" - NGỒI TRÊN CẠNH BẢNG SỐ (MỚI) */
+    .rabbit-peek {
+        position: absolute;
+        top: -90px;       /* Đẩy lên trên mép bảng */
+        left: -30px;      /* Đẩy sang trái một chút */
+        width: 130px;     /* Kích thước vừa vặn */
+        height: auto;
+        z-index: 200;     /* Nằm đè lên trên bảng số */
+        filter: drop-shadow(2px 5px 5px rgba(0,0,0,0.3));
+        animation: rabbitJump 3s infinite ease-in-out; /* Vẫn nhún nhảy */
     }
 
     /* Số khổng lồ */
@@ -90,6 +92,7 @@ st.markdown("""
         color: #ff6b6b;
         text-shadow: 4px 4px 0px #fff;
         margin: 0;
+        margin-top: 20px;
     }
 
     /* BUTTON STYLE */
@@ -106,7 +109,7 @@ st.markdown("""
         box-shadow: 0 5px 0 rgba(0,0,0,0.15);
         transition: all 0.2s;
         position: relative;
-        z-index: 101; /* Nổi lên trên cùng để bấm được */
+        z-index: 101; 
     }
 
     div.stButton > button:active {
@@ -143,12 +146,11 @@ st.markdown("""
         left: 0;
         width: 100vw;
         height: 100vh;
-        pointer-events: none; /* Cho phép bấm xuyên qua hình */
+        pointer-events: none; 
         z-index: 1;
         overflow: hidden;
     }
 
-    /* VỊT BƠI */
     @keyframes swim-screen {
         0% { left: -150px; transform: scaleX(1); }
         45% { left: 100vw; transform: scaleX(1); }
@@ -163,7 +165,6 @@ st.markdown("""
         animation: swim-screen 25s linear infinite;
     }
 
-    /* ONG BAY */
     @keyframes fly-screen {
         0%   { top: 10vh; left: -10vw; }
         25%  { top: 20vh; left: 30vw; transform: rotate(10deg); }
@@ -177,7 +178,6 @@ st.markdown("""
         animation: fly-screen 20s linear infinite;
     }
 
-    /* BONG BÓNG */
     @keyframes rise-screen {
         0% { bottom: -50px; opacity: 0; transform: scale(0.5); }
         50% { opacity: 0.6; }
@@ -285,16 +285,19 @@ elif st.session_state.step == 2:
             play_sound_and_wait(f"Đúng rồi! Số {st.session_state.num}. Cùng xem hình nhé!")
             st.session_state.step = 3
             st.rerun()
-        
-        # --- CHÈN THỎ VÀO GÓC DƯỚI BÊN TRÁI ---
+    
+    # --- PHẦN HIỂN THỊ THẺ SỐ VÀ THỎ ---
+    with col_display:
+        # Chuẩn bị hình thỏ
+        rabbit_html = ""
         img_b64 = get_base64_image("thocon.png")
         if img_b64:
-            st.markdown(f'<img src="data:image/png;base64,{img_b64}" class="rabbit-corner">', unsafe_allow_html=True)
-
-    with col_display:
+            # Class rabbit-peek sẽ đưa thỏ lên góc trên bảng số
+            rabbit_html = f'<img src="data:image/png;base64,{img_b64}" class="rabbit-peek">'
+        
         st.markdown(f"""
         <div class="game-card">
-            <p class="instruction">Số này là số mấy?</p>
+            {rabbit_html} <p class="instruction">Số này là số mấy?</p>
             <div class="super-number">{st.session_state.num}</div>
         </div>
         """, unsafe_allow_html=True)
