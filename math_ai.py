@@ -63,11 +63,11 @@ st.markdown("""
     }
 
     .rabbit-hero {
-        max-width: 200px;
+        max-width: 120px; /* ĐÃ CHỈNH NHỎ LẠI (Cũ là 200px) */
         height: auto;
         margin-bottom: 20px;
         filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2));
-        animation: rabbitJump 3s infinite ease-in-out; /* Thỏ chuyển động tại đây */
+        animation: rabbitJump 3s infinite ease-in-out;
     }
 
     /* Số khổng lồ */
@@ -181,16 +181,26 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ================== 3. HÀM XỬ LÝ LOGIC ==================
-def play_sound_and_wait(text, wait_seconds):
+def play_sound_and_wait(text, manual_wait=0):
     try:
+        # 1. Phát âm thanh
         sound_file = BytesIO()
         tts = gTTS(text=text, lang='vi')
         tts.write_to_fp(sound_file)
         st.audio(sound_file, format='audio/mp3', autoplay=True)
+        
+        # 2. Tính toán thời gian chờ thông minh
+        # Trung bình đọc 1 từ mất 0.4s. Cộng thêm 1.5s để khởi động và dư âm.
+        calculated_wait = (len(text.split()) * 0.45) + 2.0
+        
+        # Lấy thời gian lớn nhất giữa: thời gian tính toán VÀ thời gian thủ công bạn nhập
+        final_wait = max(calculated_wait, manual_wait)
+
         with st.spinner(f"🔊 Cô đang nói..."):
-            time.sleep(wait_seconds)
+            time.sleep(final_wait)
+            
     except Exception:
-        time.sleep(wait_seconds)
+        time.sleep(manual_wait)
 
 def generate_data():
     st.session_state.num = random.randint(1, 10)
@@ -215,20 +225,16 @@ def get_decoration_html():
 
 # ================== 4. GIAO DIỆN CHÍNH ==================
 
-# Gọi hàm hiển thị hoạt hình ngay đầu chương trình để nó áp dụng cho mọi trang
 st.markdown(get_decoration_html(), unsafe_allow_html=True)
 
 # --- BƯỚC 1: TRANG CHỦ ---
 if st.session_state.step == 1:
-    # Xử lý hình ảnh Thỏ con
     img_html = ""
-    img_b64 = get_base64_image("thocon.png") # Đọc file ảnh thocon.png
+    img_b64 = get_base64_image("thocon.png")
     
     if img_b64:
-        # Nếu tìm thấy ảnh, dùng ảnh và gán class rabbit-hero để nhảy
         img_html = f'<img src="data:image/png;base64,{img_b64}" class="rabbit-hero">'
     else:
-        # Nếu không thấy ảnh (phòng hờ), dùng icon cũ
         img_html = '<div style="font-size:100px; margin-bottom:10px;">🐰</div>'
 
     st.markdown(f"""
@@ -243,7 +249,8 @@ if st.session_state.step == 1:
     with c2:
         st.markdown("""<style>div.stButton > button {background: linear-gradient(to bottom, #ff6b6b, #ee5253); height: 80px; font-size: 24px !important;}</style>""", unsafe_allow_html=True)
         if st.button("🚀 BẮT ĐẦU NGAY"):
-            play_sound_and_wait("Chào mừng bé! Hôm nay chúng mình cùng học số đếm nhé!", 3)
+            # Câu chào này dài, hàm play_sound_and_wait sẽ tự tính thời gian (khoảng 6-7s)
+            play_sound_and_wait("Chào mừng bé! Hôm nay chúng mình cùng học số đếm nhé!")
             st.session_state.step = 2
             st.rerun()
 
@@ -256,11 +263,11 @@ elif st.session_state.step == 2:
         
         st.markdown(f"""<style>div.stButton:nth-of-type(1) > button {{background: linear-gradient(to bottom, #a29bfe, #6c5ce7);}}</style>""", unsafe_allow_html=True)
         if st.button("🔊 Nghe câu hỏi"):
-            play_sound_and_wait("Bé hãy nhìn xem, đây là số mấy?", 3)
+            play_sound_and_wait("Bé hãy nhìn xem, đây là số mấy?")
 
         st.markdown(f"""<style>div.stButton:nth-of-type(2) > button {{background: linear-gradient(to bottom, #74b9ff, #0984e3);}}</style>""", unsafe_allow_html=True)
         if st.button("🗣️ Đây là số...?"):
-            play_sound_and_wait(f"Đây là số {st.session_state.num}", 2)
+            play_sound_and_wait(f"Đây là số {st.session_state.num}")
 
         st.markdown(f"""<style>div.stButton:nth-of-type(3) > button {{background: linear-gradient(to bottom, #ffeaa7, #fdcb6e); color: #d35400 !important;}}</style>""", unsafe_allow_html=True)
         if st.button("🔄 Đổi số khác"):
@@ -269,7 +276,7 @@ elif st.session_state.step == 2:
 
         st.markdown(f"""<style>div.stButton:nth-of-type(4) > button {{background: linear-gradient(to bottom, #fd79a8, #e84393);}}</style>""", unsafe_allow_html=True)
         if st.button("➡️ Xem hình ảnh"):
-            play_sound_and_wait(f"Đúng rồi! Số {st.session_state.num}. Cùng xem hình nhé!", 4)
+            play_sound_and_wait(f"Đúng rồi! Số {st.session_state.num}. Cùng xem hình nhé!")
             st.session_state.step = 3
             st.rerun()
 
@@ -292,15 +299,15 @@ elif st.session_state.step == 3:
         
         st.markdown(f"""<style>div.stButton:nth-of-type(1) > button {{background: linear-gradient(to bottom, #a29bfe, #6c5ce7);}}</style>""", unsafe_allow_html=True)
         if st.button("🔊 Nghe câu hỏi"):
-            play_sound_and_wait(f"Đố bé biết có bao nhiêu bạn {st.session_state.name} ở đây?", 5)
+            play_sound_and_wait(f"Đố bé biết có bao nhiêu bạn {st.session_state.name} ở đây?")
         
         st.markdown(f"""<style>div.stButton:nth-of-type(2) > button {{background: linear-gradient(to bottom, #55efc4, #00b894);}}</style>""", unsafe_allow_html=True)
         if st.button("🔢 Đếm cùng cô"):
-            play_sound_and_wait(f"Có tất cả {st.session_state.num} bạn {st.session_state.name}", 3)
+            play_sound_and_wait(f"Có tất cả {st.session_state.num} bạn {st.session_state.name}")
 
         st.markdown(f"""<style>div.stButton:nth-of-type(3) > button {{background: linear-gradient(to bottom, #fab1a0, #e17055);}}</style>""", unsafe_allow_html=True)
         if st.button("🎮 Chơi trò chơi"):
-            play_sound_and_wait("Bây giờ bé hãy tự mình chọn đáp án đúng nhé!", 3)
+            play_sound_and_wait("Bây giờ bé hãy tự mình chọn đáp án đúng nhé!")
             st.session_state.step = 4
             st.rerun()
 
@@ -324,7 +331,7 @@ elif st.session_state.step == 4:
         
         st.markdown(f"""<style>div.stButton:nth-of-type(1) > button {{background: linear-gradient(to bottom, #a29bfe, #6c5ce7);}}</style>""", unsafe_allow_html=True)
         if st.button("🔊 Nghe câu hỏi"):
-            play_sound_and_wait("Bé hãy đếm kỹ và chọn số đúng ở bên cạnh nhé!", 5)
+            play_sound_and_wait("Bé hãy đếm kỹ và chọn số đúng ở bên cạnh nhé!")
             
         st.markdown(f"""<style>div.stButton:last-of-type > button {{background: linear-gradient(to bottom, #dfe6e9, #b2bec3); color: #636e72 !important; margin-top: 20px;}}</style>""", unsafe_allow_html=True)
         if st.button("⬅️ Quay lại"):
@@ -350,10 +357,10 @@ elif st.session_state.step == 4:
                 if st.button(str(choice), key=f"ans_{idx}"):
                     if choice == st.session_state.num:
                         st.balloons()
-                        play_sound_and_wait("Chính xác! Hoan hô bé!", 3)
+                        play_sound_and_wait("Chính xác! Hoan hô bé!")
                         generate_data()
                         st.session_state.step = 2
                         st.rerun()
                     else:
                         st.error("Sai rồi!")
-                        play_sound_and_wait("Chưa đúng rồi, bé thử lại nhé!", 2)
+                        play_sound_and_wait("Chưa đúng rồi, bé thử lại nhé!")
