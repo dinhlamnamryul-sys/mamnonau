@@ -41,7 +41,6 @@ st.markdown("""
     }
     
     /* === QUAN TRỌNG: CHỐNG LÀM MỜ KHI APP ĐANG CHẠY (KHI NÓI) === */
-    /* Ép buộc mọi phần tử trong app không bao giờ bị giảm opacity hay bị filter mờ */
     .element-container, .stMarkdown, .stBlock, div[data-testid="stVerticalBlock"] {
         opacity: 1 !important;
         filter: none !important;
@@ -61,7 +60,6 @@ st.markdown("""
         min-height: 350px;
         margin-top: 40px;
         
-        /* Đảm bảo card này luôn rõ nét tuyệt đối */
         opacity: 1 !important;
         filter: none !important;
         transform-style: preserve-3d;
@@ -84,7 +82,7 @@ st.markdown("""
         max-width: 120px;
         height: auto;
         margin-bottom: 20px;
-        filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2)) !important; /* Giữ bóng, không cho mờ */
+        filter: drop-shadow(0 8px 6px rgba(0,0,0,0.2)) !important;
         animation: rabbitJump 3s infinite ease-in-out;
         opacity: 1 !important;
     }
@@ -114,7 +112,7 @@ st.markdown("""
         opacity: 1 !important;
     }
 
-    /* SỐ KHỔNG LỒ - SIÊU NÉT */
+    /* SỐ KHỔNG LỒ (Dùng cho bước 2) */
     .super-number {
         font-size: 140px;
         line-height: 1.1;
@@ -128,11 +126,9 @@ st.markdown("""
             1px 1px 0 #fff;
         margin: 0;
         margin-top: 20px;
-        
-        /* Các thuộc tính chống mờ */
         opacity: 1 !important;
         filter: drop-shadow(0px 4px 4px rgba(0,0,0,0.1)) !important;
-        transform: translateZ(0); /* Kích hoạt GPU rendering để chữ nét hơn */
+        transform: translateZ(0); 
         -webkit-font-smoothing: antialiased;
     }
 
@@ -155,7 +151,6 @@ st.markdown("""
         text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
     }
 
-    /* Trạng thái khi bấm: KHÔNG MỜ */
     div.stButton > button:active, div.stButton > button:focus, div.stButton > button:hover {
         top: 4px;
         box-shadow: 0 0 0 rgba(0,0,0,0.15);
@@ -239,7 +234,6 @@ def play_sound_and_wait(text, manual_wait=0):
         calculated_wait = (len(text.split()) * 0.45) + 2.0
         final_wait = max(calculated_wait, manual_wait)
 
-        # Spinner vẫn hiện để báo hiệu, nhưng CSS đã chặn việc nó làm mờ nền xung quanh
         with st.spinner(f"🔊 Cô đang nói..."):
             time.sleep(final_wait)
             
@@ -301,7 +295,7 @@ if st.session_state.step == 1:
             st.session_state.step = 2
             st.rerun()
 
-# --- BƯỚC 2: HỌC SỐ ---
+# --- BƯỚC 2: HỌC SỐ (Vẫn hiện số để bé học) ---
 elif st.session_state.step == 2:
     col_controls, col_display = st.columns([3, 7], gap="large")
 
@@ -340,7 +334,7 @@ elif st.session_state.step == 2:
         </div>
         """, unsafe_allow_html=True)
 
-# --- BƯỚC 3: HỌC ĐẾM ---
+# --- BƯỚC 3: XEM HÌNH & HỌC ĐẾM (Đã xóa số hiển thị) ---
 elif st.session_state.step == 3:
     html_icons = "".join([f'<span class="char-item">{st.session_state.icon}</span>' for _ in range(st.session_state.num)])
     
@@ -368,8 +362,7 @@ elif st.session_state.step == 3:
         <div class="game-card">
             <p class="instruction">Có bao nhiêu <b>{st.session_state.name}</b>?</p>
             <div style="margin: 10px 0;">{html_icons}</div>
-            <h1 style="font-size: 80px; color:#ff6b81; margin:0;">{st.session_state.num}</h1>
-        </div>
+            </div>
         """, unsafe_allow_html=True)
 
 # --- BƯỚC 4: BÀI TẬP ---
