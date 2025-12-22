@@ -113,21 +113,30 @@ st.markdown("""
         width: 100%;
         height: 65px;
         font-size: 18px !important;
-        font-weight: 800 !important;
+        font-weight: 900 !important; /* Tăng độ đậm */
         color: white !important;
         border: 3px solid white !important;
         border-radius: 30px !important;
         cursor: pointer;
         margin-bottom: 12px;
         box-shadow: 0 5px 0 rgba(0,0,0,0.15);
-        transition: all 0.2s;
+        transition: all 0.1s; /* Giảm thời gian transition để phản hồi nhanh hơn */
         position: relative;
         z-index: 101; 
+        opacity: 1 !important; /* Đảm bảo nút luôn rõ 100% */
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Thêm bóng chữ để số nổi bật */
     }
 
-    div.stButton > button:active {
+    /* Trạng thái khi bấm hoặc focus: KHÔNG LÀM MỜ */
+    div.stButton > button:active, div.stButton > button:focus, div.stButton > button:hover {
         top: 4px;
         box-shadow: 0 0 0 rgba(0,0,0,0.15);
+        color: white !important;
+        background-color: inherit !important; /* Giữ nguyên màu nền */
+        opacity: 1 !important; /* QUAN TRỌNG: Không cho phép mờ */
+        text-decoration: none !important;
+        outline: none !important;
+        border-color: white !important;
     }
 
     .char-item {
@@ -397,4 +406,3 @@ elif st.session_state.step == 4:
                     else:
                         st.error("Sai rồi!")
                         play_sound_and_wait("Chưa đúng rồi, bé thử lại nhé!")
-
